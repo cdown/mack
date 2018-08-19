@@ -2,6 +2,9 @@ extern crate clap;
 extern crate ignore;
 extern crate taglib;
 
+use std::path::Path;
+
+#[derive(Debug)]
 struct TrackMetadata {
     artist: String,
     album: String,
@@ -36,6 +39,27 @@ fn build_music_walker(dir: &str) -> Result<ignore::Walk, MackError> {
     Ok(ignore::WalkBuilder::new(dir).types(music_types).build())
 }
 
+fn get_track_metadata(path: &Path) -> Result<TrackMetadata, MackError> {
+    let file = match path.to_str() {
+        Some(file) => file,
+        None => {
+            let msg =
+                format!("Path {:?} contains non-Unicode. This is not supported, so bailing.", path);
+            panic!(msg);
+        }
+    };
+
+    let tag_file = taglib::File::new(file)?;
+    let tags = tag_file.tag()?;
+    Ok(TrackMetadata {
+        artist: tags.artist(),
+        album: tags.album(),
+        title: tags.title(),
+        track_number: tags.track(),
+        year: tags.year(),
+    })
+}
+
 fn main() {
     let args = clap::App::new("mack")
         .about("The opinionated music library organiser.")
@@ -50,10 +74,7 @@ fn main() {
             Ok(entry) => {
                 let path = entry.path();
                 if path.is_file() {
-                    let file = path.to_str().unwrap();
-                    let tag_file = taglib::File::new(file).unwrap();
-                    let tag = tag_file.tag().unwrap();
-                    println!("{}", tag.artist());
+                    println!("{:?}", get_track_metadata(&path));
                 }
             }
             Err(err) => eprintln!("error: {}", err),
