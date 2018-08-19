@@ -75,15 +75,18 @@ fn run_fixers(track: Track) -> Result<Vec<Fixer>, MackError> {
 
     applied_fixers.push(fix_feat(&mut tags)?);
 
-    // Get rid of None values
-    let applied_fixers = applied_fixers.into_iter().flat_map(|x| x).collect();
+    let applied_fixers: Vec<Fixer> = applied_fixers.into_iter().flat_map(|x| x).collect();
+
+    if !applied_fixers.is_empty() {
+        track.tag_file.save();
+    }
 
     Ok(applied_fixers)
 }
 
 fn fix_feat(tags: &mut taglib::Tag) -> Result<Option<Fixer>, MackError> {
     let old_title = tags.title();
-    let new_title = FEAT_RE.replace_all(&old_title, " (replaced. $artists)");
+    let new_title = FEAT_RE.replace_all(&old_title, " (feat. $artists)");
     let changed = old_title != new_title;
     if changed {
         tags.set_title(&new_title);
