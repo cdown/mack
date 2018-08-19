@@ -69,7 +69,7 @@ fn get_track(path: PathBuf) -> Result<Track, MackError> {
     })
 }
 
-fn run_fixers(track: Track, dry_run: bool) -> Result<Vec<Fixer>, MackError> {
+fn run_fixers(track: &mut Track, dry_run: bool) -> Result<Vec<Fixer>, MackError> {
     let mut applied_fixers = Vec::new();
     let mut tags = track.tag_file.tag()?;
 
@@ -110,13 +110,18 @@ fn main() {
                 let path = entry.path().to_path_buf();
                 if path.is_file() {
                     match get_track(path) {
-                        Ok(track) => {
-                            {
-                                let tags = track.tag_file.tag().expect("Failed to get tags");
-                                println!("{} {} {}", tags.artist(), tags.album(), tags.title());
+                        Ok(mut track) => {
+                            let fix_results = run_fixers(&mut track, args.is_present("dry_run"));
+                            match fix_results {
+                                Ok(applied_fixers) => {
+                                    if !applied_fixers.is_empty() {
+                                        println!("{}: {:?}", track.path.display(), applied_fixers);
+                                    }
+                                }
+                                Err(err) => {
+                                    eprintln!("error fixing {}: {:?}", track.path.display(), err)
+                                }
                             }
-                            let applied_fixers = run_fixers(track, args.is_present("dry_run"));
-                            println!("{:?}", applied_fixers);
                         }
                         Err(err) => eprintln!("error: {:?}", err),
                     }
