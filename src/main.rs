@@ -4,9 +4,9 @@ extern crate taglib;
 
 use std::path::PathBuf;
 
-struct Track<'a> {
+struct Track {
     path: PathBuf,
-    tags: taglib::Tag<'a>,
+    tag_file: taglib::File,
 }
 
 #[derive(Debug)]
@@ -35,7 +35,7 @@ fn build_music_walker(dir: &str) -> Result<ignore::Walk, MackError> {
     Ok(ignore::WalkBuilder::new(dir).types(music_types).build())
 }
 
-fn get_track<'a>(path: PathBuf) -> Result<Track<'a>, MackError> {
+fn get_track(path: PathBuf) -> Result<Track, MackError> {
     let tl_path = path.clone();
     let file = match tl_path.to_str() {
         Some(file) => file,
@@ -47,10 +47,9 @@ fn get_track<'a>(path: PathBuf) -> Result<Track<'a>, MackError> {
     };
 
     let tag_file = taglib::File::new(file)?;
-    let tags = tag_file.tag()?;
     Ok(Track{
         path: path,
-        tags: tags,
+        tag_file: tag_file,
     })
 }
 
@@ -70,7 +69,7 @@ fn main() {
                 if path.is_file() {
                     match get_track(path) {
                         Ok(track) => {
-                            let tags = track.tags;
+                            let tags = track.tag_file.tag().expect("Failed to get tags");
                             println!("{} {} {}", tags.artist(), tags.album(), tags.title());
                         },
                         Err(err) => eprintln!("error: {:?}", err),
