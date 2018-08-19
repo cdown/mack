@@ -21,6 +21,11 @@ struct Track {
 }
 
 #[derive(Debug)]
+enum Fixer {
+    FEAT,
+}
+
+#[derive(Debug)]
 enum MackError {
     Tag(taglib::FileError),
     Ignore(ignore::Error),
@@ -64,17 +69,24 @@ fn get_track(path: PathBuf) -> Result<Track, MackError> {
     })
 }
 
-fn run_linters(track: Track) -> Result<(), MackError> {
+fn run_fixers(track: Track) -> Result<Vec<Option<Fixer>>, MackError> {
+    let mut applied_fixers = Vec::new();
     let mut tags = track.tag_file.tag()?;
-    fix_feat(&track);
-    Ok(())
+
+    applied_fixers.push(fix_feat(&mut tags)?);
+
+    Ok(applied_fixers)
 }
 
-fn fix_feat(track: &Track) -> Result<(), MackError> {
-    let old_title = track.tag_file.tag()?.title();
+fn fix_feat(tags: &mut taglib::Tag) -> Result<Option<Fixer>, MackError> {
+    let old_title = tags.title();
     let new_title = FEAT_RE.replace_all(&old_title, " (replaced. $artists)");
-    println!("{}", new_title);
-    Ok(())
+    let changed = old_title != new_title;
+    if changed {
+        tags.set_title(&new_title);
+        return Ok(Some(Fixer::FEAT));
+    }
+    Ok(None)
 }
 
 fn main() {
@@ -97,7 +109,8 @@ fn main() {
                                 let tags = track.tag_file.tag().expect("Failed to get tags");
                                 println!("{} {} {}", tags.artist(), tags.album(), tags.title());
                             }
-                            run_linters(track);
+                            let applied_fixers = run_fixers(track).unwrap();
+                            println!("{:?}", applied_fixers);
                         }
                         Err(err) => eprintln!("error: {:?}", err),
                     }
