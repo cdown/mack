@@ -2,10 +2,11 @@ extern crate clap;
 extern crate ignore;
 extern crate taglib;
 
-use std::path::Path;
+use std::path::PathBuf;
 
 #[derive(Debug)]
 struct TrackMetadata {
+    path: PathBuf,
     artist: String,
     album: String,
     title: String,
@@ -39,8 +40,9 @@ fn build_music_walker(dir: &str) -> Result<ignore::Walk, MackError> {
     Ok(ignore::WalkBuilder::new(dir).types(music_types).build())
 }
 
-fn get_track_metadata(path: &Path) -> Result<TrackMetadata, MackError> {
-    let file = match path.to_str() {
+fn get_track_metadata(path: PathBuf) -> Result<TrackMetadata, MackError> {
+    let tl_path = path.clone();
+    let file = match tl_path.to_str() {
         Some(file) => file,
         None => {
             let msg =
@@ -52,6 +54,7 @@ fn get_track_metadata(path: &Path) -> Result<TrackMetadata, MackError> {
     let tag_file = taglib::File::new(file)?;
     let tags = tag_file.tag()?;
     Ok(TrackMetadata {
+        path: path,
         artist: tags.artist(),
         album: tags.album(),
         title: tags.title(),
@@ -72,9 +75,9 @@ fn main() {
     for result in walker {
         match result {
             Ok(entry) => {
-                let path = entry.path();
+                let path = entry.path().to_path_buf();
                 if path.is_file() {
-                    println!("{:?}", get_track_metadata(&path));
+                    println!("{:?}", get_track_metadata(path));
                 }
             }
             Err(err) => eprintln!("error: {}", err),
