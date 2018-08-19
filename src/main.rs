@@ -62,8 +62,12 @@ fn get_track(path: PathBuf) -> Result<Track, MackError> {
     })
 }
 
-fn fix_feat(tags: taglib::Tag) {
-    let old_title = tags.title();
+fn run_linters(track: Track) -> () {
+    fix_feat(&track);
+}
+
+fn fix_feat(track: &Track) {
+    let old_title = track.tag_file.tag().unwrap().title();
     let new_title = FEAT_RE.replace_all(&old_title, "(replaced. $artists)");
     println!("{}", new_title);
 }
@@ -84,9 +88,11 @@ fn main() {
                 if path.is_file() {
                     match get_track(path) {
                         Ok(track) => {
-                            let tags = track.tag_file.tag().expect("Failed to get tags");
-                            println!("{} {} {}", tags.artist(), tags.album(), tags.title());
-                            fix_feat(tags);
+                            {
+                                let tags = track.tag_file.tag().expect("Failed to get tags");
+                                println!("{} {} {}", tags.artist(), tags.album(), tags.title());
+                            }
+                            run_linters(track);
                         }
                         Err(err) => eprintln!("error: {:?}", err),
                     }
