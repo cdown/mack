@@ -1,8 +1,17 @@
 extern crate clap;
 extern crate ignore;
 extern crate taglib;
+extern crate regex;
+#[macro_use]
+extern crate lazy_static;
 
+use regex::Regex;
 use std::path::PathBuf;
+use std::collections::HashMap;
+
+lazy_static! {
+    static ref FEAT_RE: Regex = Regex::new(r#"\(feat. (?P<artists>[^)]+)\)"#).unwrap();
+}
 
 struct Track {
     path: PathBuf,
@@ -47,10 +56,16 @@ fn get_track(path: PathBuf) -> Result<Track, MackError> {
     };
 
     let tag_file = taglib::File::new(file)?;
-    Ok(Track{
+    Ok(Track {
         path: path,
         tag_file: tag_file,
     })
+}
+
+fn fix_feat(tags: taglib::Tag) {
+    let old_title = tags.title();
+    let new_title = FEAT_RE.replace_all(&old_title, "(replaced. $artists)");
+    println!("{}", new_title);
 }
 
 fn main() {
@@ -71,7 +86,8 @@ fn main() {
                         Ok(track) => {
                             let tags = track.tag_file.tag().expect("Failed to get tags");
                             println!("{} {} {}", tags.artist(), tags.album(), tags.title());
-                        },
+                            fix_feat(tags);
+                        }
                         Err(err) => eprintln!("error: {:?}", err),
                     }
                 }

@@ -7,3 +7,5 @@ authors = ["Chris Down <chris@chrisdown.name>"]
 clap = "*"
 taglib = { git = "https://github.com/ebassi/taglib-rust", rev = "513dabf1c56c"}
 ignore = "*"
+lazy_static = "*"
+regex = "*"
