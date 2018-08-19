@@ -5,12 +5,14 @@ extern crate regex;
 #[macro_use]
 extern crate lazy_static;
 
-use regex::Regex;
+use regex::{Regex, RegexBuilder};
 use std::path::PathBuf;
 use std::collections::HashMap;
 
 lazy_static! {
-    static ref FEAT_RE: Regex = Regex::new(r#" [(\[]?feat[^.]*\. (?P<artists>[^)]+)[)\]]?"#).unwrap();
+    static ref FEAT_RE: Regex = RegexBuilder::new(
+        r#" [(\[]?feat[^.]*\. (?P<artists>[^)]+)[)\]]?"#
+    ).case_insensitive(true).build().unwrap();
 }
 
 struct Track {
