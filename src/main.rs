@@ -1,7 +1,15 @@
 extern crate clap;
 extern crate failure;
-extern crate id3;
 extern crate ignore;
+extern crate taglib;
+
+struct TrackMetadata {
+    artist: String,
+    album: String,
+    title: String,
+    track_number: u32,
+    year: u32,
+}
 
 fn build_music_walker(dir: &str) -> Result<ignore::Walk, ignore::Error> {
     let mut mt_builder = ignore::types::TypesBuilder::new();
@@ -23,8 +31,12 @@ fn main() {
     for result in walker {
         match result {
             Ok(entry) => {
-                if entry.path().is_file() {
-                    println!("{}", entry.path().display());
+                let path = entry.path();
+                if path.is_file() {
+                    let file = path.to_str().unwrap();
+                    let tag_file = taglib::File::new(file).unwrap();
+                    let tag = tag_file.tag().unwrap();
+                    println!("{}", tag.artist());
                 }
             }
             Err(err) => eprintln!("error: {}", err),
