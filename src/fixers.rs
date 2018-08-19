@@ -5,7 +5,7 @@ use std::borrow::Cow;
 
 lazy_static! {
     static ref FEAT_RE: Regex = RegexBuilder::new(
-        r#" [(\[]?f(ea)?t[a-z]*\.? (?P<artists>[^)]+)[)\]]?"#
+        r#" [(\[]?f(ea)?t[a-z]*\.? (?P<artists>[^)\]]+)[)\]]?"#
     ).case_insensitive(true).build().unwrap();
 }
 
@@ -45,13 +45,26 @@ mod tests {
 
     #[test]
     fn test_normalise_feat() {
-        let exp = "Foo Bar (feat. Baz and Quux)";
+        let title = "我是笨蛋";
+        let artist = "傻瓜";
+
+        // Non-feat is passed through with no change
+        let exp = title;
         assert_eq!(normalise_feat(exp), exp);
-        assert_eq!(normalise_feat("Foo Bar feat. Baz and Quux"), exp);
-        assert_eq!(normalise_feat("Foo Bar feat Baz and Quux"), exp);
-        assert_eq!(normalise_feat("Foo Bar ft. Baz and Quux"), exp);
-        assert_eq!(normalise_feat("Foo Bar featuring Baz and Quux"), exp);
-        assert_eq!(normalise_feat("Foo Bar Feat Baz and Quux"), exp);
-        assert_eq!(normalise_feat("Foo Bar"), "Foo Bar");
+
+        let exp = format!("{} (feat. {})", title, artist);
+        assert_eq!(normalise_feat(&exp), exp);
+
+        for feat in ["featuring", "feat", "ft"].iter() {
+            for opening in ["", "(", "["].iter() {
+                for closing in ["", ")", "]"].iter() {
+                    for dot in ["", "."].iter() {
+                        let title = format!("{} {}{}{} {}{}", title, opening, feat, dot, artist, closing);
+                        println!("{}", title);
+                        assert_eq!(normalise_feat(&title), exp);
+                    }
+                }
+            }
+        }
     }
 }
