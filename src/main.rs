@@ -1,49 +1,16 @@
 extern crate clap;
 extern crate ignore;
-extern crate taglib;
-extern crate regex;
 #[macro_use]
 extern crate lazy_static;
+extern crate regex;
+extern crate taglib;
 
-use regex::{Regex, RegexBuilder};
 use std::path::PathBuf;
-use std::collections::HashMap;
 
-lazy_static! {
-    static ref FEAT_RE: Regex = RegexBuilder::new(
-        r#" [(\[]?feat[^.]*\. (?P<artists>[^)]+)[)\]]?"#
-    ).case_insensitive(true).build().unwrap();
-}
+mod types;
+mod fixers;
 
-struct Track {
-    path: PathBuf,
-    tag_file: taglib::File,
-}
-
-#[derive(Debug)]
-enum Fixer {
-    FEAT,
-}
-
-#[derive(Debug)]
-enum MackError {
-    Tag(taglib::FileError),
-    Ignore(ignore::Error),
-}
-
-impl From<taglib::FileError> for MackError {
-    fn from(err: taglib::FileError) -> MackError {
-        MackError::Tag(err)
-    }
-}
-
-impl From<ignore::Error> for MackError {
-    fn from(err: ignore::Error) -> MackError {
-        MackError::Ignore(err)
-    }
-}
-
-fn build_music_walker(dir: &str) -> Result<ignore::Walk, MackError> {
+fn build_music_walker(dir: &str) -> Result<ignore::Walk, types::MackError> {
     let mut mt_builder = ignore::types::TypesBuilder::new();
     mt_builder.add("music", "*.mp3")?;
     mt_builder.select("music");
@@ -51,7 +18,7 @@ fn build_music_walker(dir: &str) -> Result<ignore::Walk, MackError> {
     Ok(ignore::WalkBuilder::new(dir).types(music_types).build())
 }
 
-fn get_track(path: PathBuf) -> Result<Track, MackError> {
+fn get_track(path: PathBuf) -> Result<types::Track, types::MackError> {
     let tl_path = path.clone();
     let file = match tl_path.to_str() {
         Some(file) => file,
@@ -63,39 +30,14 @@ fn get_track(path: PathBuf) -> Result<Track, MackError> {
     };
 
     let tag_file = taglib::File::new(file)?;
-    Ok(Track {
+    Ok(types::Track {
         path: path,
         tag_file: tag_file,
     })
 }
 
-fn run_fixers(track: &mut Track, dry_run: bool) -> Result<Vec<Fixer>, MackError> {
-    let mut applied_fixers = Vec::new();
-    let mut tags = track.tag_file.tag()?;
-
-    applied_fixers.push(fix_feat(&mut tags)?);
-
-    let applied_fixers: Vec<Fixer> = applied_fixers.into_iter().flat_map(|x| x).collect();
-
-    if !dry_run && !applied_fixers.is_empty() {
-        track.tag_file.save();
-    }
-
-    Ok(applied_fixers)
-}
-
-fn fix_feat(tags: &mut taglib::Tag) -> Result<Option<Fixer>, MackError> {
-    let old_title = tags.title();
-    let new_title = FEAT_RE.replace_all(&old_title, " (feat. $artists)");
-    if old_title != new_title {
-        tags.set_title(&new_title);
-        return Ok(Some(Fixer::FEAT));
-    }
-    Ok(None)
-}
-
 /// We don't intend to print *all* metadata, only ones we might actually try to apply fixes to
-fn print_track_info(track: &Track) -> () {
+fn print_track_info(track: &types::Track) -> () {
     let tags = track.tag_file.tag();
 
     match tags {
@@ -106,7 +48,7 @@ fn print_track_info(track: &Track) -> () {
             println!("- Title:   {}", tags.title());
             println!("- Track #: {}", tags.track());
             println!("- Year:    {}\n", tags.year());
-        },
+        }
         Err(err) => eprintln!("error printing track info: {}: {:?}", track.path.display(), err),
     }
 }
@@ -128,7 +70,8 @@ fn main() {
                 if path.is_file() {
                     match get_track(path) {
                         Ok(mut track) => {
-                            let fix_results = run_fixers(&mut track, args.is_present("dry_run"));
+                            let fix_results =
+                                fixers::run_fixers(&mut track, args.is_present("dry_run"));
                             match fix_results {
                                 Ok(applied_fixers) => {
                                     if !applied_fixers.is_empty() {
