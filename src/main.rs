@@ -65,15 +65,16 @@ fn get_track(path: PathBuf) -> Result<Track, MackError> {
 }
 
 fn run_linters(track: Track) -> Result<(), MackError> {
-    let tags = track.tag_file.tag()?;
-    fix_feat(&tags);
+    let mut tags = track.tag_file.tag()?;
+    fix_feat(&track);
     Ok(())
 }
 
-fn fix_feat(tags: &taglib::Tag) {
-    let old_title = tags.title();
+fn fix_feat(track: &Track) -> Result<(), MackError> {
+    let old_title = track.tag_file.tag()?.title();
     let new_title = FEAT_RE.replace_all(&old_title, " (replaced. $artists)");
     println!("{}", new_title);
+    Ok(())
 }
 
 fn main() {
