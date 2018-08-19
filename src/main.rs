@@ -69,7 +69,7 @@ fn get_track(path: PathBuf) -> Result<Track, MackError> {
     })
 }
 
-fn run_fixers(track: Track) -> Result<Vec<Fixer>, MackError> {
+fn run_fixers(track: Track, dry_run: bool) -> Result<Vec<Fixer>, MackError> {
     let mut applied_fixers = Vec::new();
     let mut tags = track.tag_file.tag()?;
 
@@ -77,7 +77,7 @@ fn run_fixers(track: Track) -> Result<Vec<Fixer>, MackError> {
 
     let applied_fixers: Vec<Fixer> = applied_fixers.into_iter().flat_map(|x| x).collect();
 
-    if !applied_fixers.is_empty() {
+    if !dry_run && !applied_fixers.is_empty() {
         track.tag_file.save();
     }
 
@@ -87,8 +87,7 @@ fn run_fixers(track: Track) -> Result<Vec<Fixer>, MackError> {
 fn fix_feat(tags: &mut taglib::Tag) -> Result<Option<Fixer>, MackError> {
     let old_title = tags.title();
     let new_title = FEAT_RE.replace_all(&old_title, " (feat. $artists)");
-    let changed = old_title != new_title;
-    if changed {
+    if old_title != new_title {
         tags.set_title(&new_title);
         return Ok(Some(Fixer::FEAT));
     }
@@ -99,6 +98,7 @@ fn main() {
     let args = clap::App::new("mack")
         .about("The opinionated music library organiser.")
         .arg(clap::Arg::with_name("DIR").index(1))
+        .arg(clap::Arg::with_name("dry_run").long("dry-run").short("n"))
         .get_matches();
 
     let walker = build_music_walker(args.value_of("DIR").unwrap_or(".")).expect(
@@ -115,7 +115,7 @@ fn main() {
                                 let tags = track.tag_file.tag().expect("Failed to get tags");
                                 println!("{} {} {}", tags.artist(), tags.album(), tags.title());
                             }
-                            let applied_fixers = run_fixers(track).unwrap();
+                            let applied_fixers = run_fixers(track, args.is_present("dry_run"));
                             println!("{:?}", applied_fixers);
                         }
                         Err(err) => eprintln!("error: {:?}", err),
