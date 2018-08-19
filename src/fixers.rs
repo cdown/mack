@@ -52,5 +52,6 @@ mod tests {
         assert_eq!(normalise_feat("Foo Bar ft. Baz and Quux"), exp);
         assert_eq!(normalise_feat("Foo Bar featuring Baz and Quux"), exp);
         assert_eq!(normalise_feat("Foo Bar Feat Baz and Quux"), exp);
+        assert_eq!(normalise_feat("Foo Bar"), "Foo Bar");
     }
 }
