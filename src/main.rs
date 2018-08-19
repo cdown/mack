@@ -1,5 +1,4 @@
 extern crate clap;
-extern crate failure;
 extern crate ignore;
 extern crate taglib;
 
@@ -11,7 +10,25 @@ struct TrackMetadata {
     year: u32,
 }
 
-fn build_music_walker(dir: &str) -> Result<ignore::Walk, ignore::Error> {
+#[derive(Debug)]
+enum MackError {
+    Tag(taglib::FileError),
+    Ignore(ignore::Error),
+}
+
+impl From<taglib::FileError> for MackError {
+    fn from(err: taglib::FileError) -> MackError {
+        MackError::Tag(err)
+    }
+}
+
+impl From<ignore::Error> for MackError {
+    fn from(err: ignore::Error) -> MackError {
+        MackError::Ignore(err)
+    }
+}
+
+fn build_music_walker(dir: &str) -> Result<ignore::Walk, MackError> {
     let mut mt_builder = ignore::types::TypesBuilder::new();
     mt_builder.add("music", "*.mp3")?;
     mt_builder.select("music");
