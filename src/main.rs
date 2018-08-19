@@ -4,14 +4,9 @@ extern crate taglib;
 
 use std::path::PathBuf;
 
-#[derive(Debug)]
-struct TrackMetadata {
+struct Track<'a> {
     path: PathBuf,
-    artist: String,
-    album: String,
-    title: String,
-    track_number: u32,
-    year: u32,
+    tags: taglib::Tag<'a>,
 }
 
 #[derive(Debug)]
@@ -40,7 +35,7 @@ fn build_music_walker(dir: &str) -> Result<ignore::Walk, MackError> {
     Ok(ignore::WalkBuilder::new(dir).types(music_types).build())
 }
 
-fn get_track_metadata(path: PathBuf) -> Result<TrackMetadata, MackError> {
+fn get_track<'a>(path: PathBuf) -> Result<Track<'a>, MackError> {
     let tl_path = path.clone();
     let file = match tl_path.to_str() {
         Some(file) => file,
@@ -53,13 +48,9 @@ fn get_track_metadata(path: PathBuf) -> Result<TrackMetadata, MackError> {
 
     let tag_file = taglib::File::new(file)?;
     let tags = tag_file.tag()?;
-    Ok(TrackMetadata {
+    Ok(Track{
         path: path,
-        artist: tags.artist(),
-        album: tags.album(),
-        title: tags.title(),
-        track_number: tags.track(),
-        year: tags.year(),
+        tags: tags,
     })
 }
 
@@ -77,7 +68,13 @@ fn main() {
             Ok(entry) => {
                 let path = entry.path().to_path_buf();
                 if path.is_file() {
-                    println!("{:?}", get_track_metadata(path));
+                    match get_track(path) {
+                        Ok(track) => {
+                            let tags = track.tags;
+                            println!("{} {} {}", tags.artist(), tags.album(), tags.title());
+                        },
+                        Err(err) => eprintln!("error: {:?}", err),
+                    }
                 }
             }
             Err(err) => eprintln!("error: {}", err),
