@@ -94,6 +94,23 @@ fn fix_feat(tags: &mut taglib::Tag) -> Result<Option<Fixer>, MackError> {
     Ok(None)
 }
 
+/// We don't intend to print *all* metadata, only ones we might actually try to apply fixes to
+fn print_track_info(track: &Track) -> () {
+    let tags = track.tag_file.tag();
+
+    match tags {
+        Ok(tags) => {
+            println!("{}:", track.path.display());
+            println!("- Album:   {}", tags.album());
+            println!("- Artist:  {}", tags.artist());
+            println!("- Title:   {}", tags.title());
+            println!("- Track #: {}", tags.track());
+            println!("- Year:    {}\n", tags.year());
+        },
+        Err(err) => eprintln!("error printing track info: {}: {:?}", track.path.display(), err),
+    }
+}
+
 fn main() {
     let args = clap::App::new("mack")
         .about("The opinionated music library organiser.")
@@ -115,7 +132,7 @@ fn main() {
                             match fix_results {
                                 Ok(applied_fixers) => {
                                     if !applied_fixers.is_empty() {
-                                        println!("{}: {:?}", track.path.display(), applied_fixers);
+                                        print_track_info(&track);
                                     }
                                 }
                                 Err(err) => {
