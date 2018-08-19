@@ -4,3 +4,6 @@ version = "0.1.0"
 authors = ["Chris Down <chris@chrisdown.name>"]
 
 [dependencies]
+clap = "*"
+id3 = "*"
+ignore = "*"
