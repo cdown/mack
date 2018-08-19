@@ -5,5 +5,6 @@ authors = ["Chris Down <chris@chrisdown.name>"]
 
 [dependencies]
 clap = "*"
+failure = "*"
 id3 = "*"
 ignore = "*"
