@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use std::collections::HashMap;
 
 lazy_static! {
-    static ref FEAT_RE: Regex = Regex::new(r#"\(feat. (?P<artists>[^)]+)\)"#).unwrap();
+    static ref FEAT_RE: Regex = Regex::new(r#" [(\[]?feat[^.]*\. (?P<artists>[^)]+)[)\]]?"#).unwrap();
 }
 
 struct Track {
@@ -68,7 +68,7 @@ fn run_linters(track: Track) -> () {
 
 fn fix_feat(track: &Track) {
     let old_title = track.tag_file.tag().unwrap().title();
-    let new_title = FEAT_RE.replace_all(&old_title, "(replaced. $artists)");
+    let new_title = FEAT_RE.replace_all(&old_title, " (replaced. $artists)");
     println!("{}", new_title);
 }
 
