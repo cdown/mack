@@ -69,11 +69,14 @@ fn get_track(path: PathBuf) -> Result<Track, MackError> {
     })
 }
 
-fn run_fixers(track: Track) -> Result<Vec<Option<Fixer>>, MackError> {
+fn run_fixers(track: Track) -> Result<Vec<Fixer>, MackError> {
     let mut applied_fixers = Vec::new();
     let mut tags = track.tag_file.tag()?;
 
     applied_fixers.push(fix_feat(&mut tags)?);
+
+    // Get rid of None values
+    let applied_fixers = applied_fixers.into_iter().flat_map(|x| x).collect();
 
     Ok(applied_fixers)
 }
