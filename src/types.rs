@@ -10,6 +10,7 @@ pub struct Track {
 #[derive(Debug)]
 pub enum Fixer {
     FEAT,
+    WHITESPACE,
 }
 
 #[derive(Debug)]
