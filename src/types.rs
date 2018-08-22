@@ -17,6 +17,7 @@ pub enum Fixer {
 pub enum MackError {
     Tag(taglib::FileError),
     Ignore(ignore::Error),
+    Blacklisted,
 }
 
 impl From<taglib::FileError> for MackError {

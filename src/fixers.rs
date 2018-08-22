@@ -14,6 +14,8 @@ pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<Vec<Fixer>, MackEr
     let mut applied_fixers = Vec::new();
     let mut tags = track.tag_file.tag()?;
 
+    fixer_is_blacklisted(&tags)?;
+
     applied_fixers.push(fix_feat(&mut tags)?);
     applied_fixers.push(fix_tag_whitespace(&mut tags)?);
 
@@ -24,6 +26,14 @@ pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<Vec<Fixer>, MackEr
     }
 
     Ok(applied_fixers)
+}
+
+fn fixer_is_blacklisted(tags: &taglib::Tag) -> Result<(), MackError> {
+    if tags.comment().contains("_NO_MACK") {
+        Err(MackError::Blacklisted)
+    } else {
+        Ok(())
+    }
 }
 
 fn fix_feat(tags: &mut taglib::Tag) -> Result<Option<Fixer>, MackError> {

@@ -43,7 +43,7 @@ fn main() {
                                     }
                                 }
                                 Err(err) => {
-                                    eprintln!("error fixing {}: {:?}", track.path.display(), err)
+                                    eprintln!("cannot fix {}: {:?}", track.path.display(), err)
                                 }
                             }
                         }
