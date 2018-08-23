@@ -25,11 +25,10 @@ fn main() {
         .arg(clap::Arg::with_name("dry_run").long("dry-run").short("n"))
         .get_matches();
 
-    let mut dirs: Vec<&str> =
-        args.values_of("DIR").expect("A provided directory is not valid UTF-8").collect();
-    if dirs.is_empty() {
-        dirs.push(".");
-    }
+    let dirs: Vec<&str> = match args.values_of("DIR") {
+        Some(dirs) => dirs.collect(),
+        None => vec!["."],
+    };
 
     for dir in dirs {
         let walker = build_music_walker(dir).expect("Error building music walker");
