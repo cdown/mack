@@ -8,10 +8,18 @@ pub fn run_fixers(track: &mut Track, _dry_run: bool) -> Result<bool, MackError> 
     fixer_is_blacklisted(&tags)?;
 
     let new_title = fix_title(&tags);
+    let new_artist = fix_artist(&tags);
 
-    println!("{:?}", new_title);
+    Ok(new_title.is_some() || new_artist.is_some())
+}
 
-    Ok(new_title.is_some())
+fn fix_artist(tags: &taglib::Tag) -> Option<String> {
+    let artist = extract_feat(tags.artist());
+    if artist.title != artist.original_title {
+        Some(artist.title)
+    } else {
+        None
+    }
 }
 
 fn fix_title(tags: &taglib::Tag) -> Option<String> {
