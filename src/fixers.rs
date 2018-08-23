@@ -15,11 +15,7 @@ pub fn run_fixers(track: &mut Track, _dry_run: bool) -> Result<bool, MackError> 
 
 fn fix_artist(tags: &taglib::Tag) -> Option<String> {
     let artist = extract_feat(tags.artist());
-    if artist.title != artist.original_title {
-        Some(artist.title)
-    } else {
-        None
-    }
+    if artist.title != artist.original_title { Some(artist.title) } else { None }
 }
 
 fn fix_title(tags: &taglib::Tag) -> Option<String> {
@@ -28,11 +24,7 @@ fn fix_title(tags: &taglib::Tag) -> Option<String> {
 
     let new_title = make_title(&old_title, &old_artist);
 
-    if new_title != old_title.original_title {
-        Some(new_title)
-    } else {
-        None
-    }
+    if new_title != old_title.original_title { Some(new_title) } else { None }
 }
 
 fn make_title(title: &TrackFeat, artist: &TrackFeat) -> String {
