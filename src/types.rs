@@ -21,7 +21,7 @@ pub enum MackError {
 }
 
 #[derive(Debug)]
-pub struct TrackTitle {
+pub struct TrackFeat {
     pub title: String,
     pub featured_artists: Vec<String>,
     pub original_title: String,

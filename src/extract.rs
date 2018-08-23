@@ -1,6 +1,6 @@
 use regex::{Regex, RegexBuilder};
 use taglib;
-use types::TrackTitle;
+use types::TrackFeat;
 
 static AMP_SPLIT: &'static str = " & ";
 
@@ -11,8 +11,7 @@ lazy_static! {
     static ref FEAT_ARTIST_SPLIT: Regex = Regex::new(r#", (?:and|&)?"#).unwrap();
 }
 
-pub fn extract_title(tags: &taglib::Tag) -> TrackTitle {
-    let title = tags.title();
+pub fn extract_feat(title: String) -> TrackFeat {
     let caps = FEAT_RE.captures(&title);
 
     match caps {
@@ -36,7 +35,7 @@ pub fn extract_title(tags: &taglib::Tag) -> TrackTitle {
 
 
             let featless_title = FEAT_RE.replace_all(&title, "").trim().to_owned();
-            TrackTitle {
+            TrackFeat {
                 title: featless_title,
                 featured_artists: feat_artists,
                 original_title: title.clone(),
@@ -44,7 +43,7 @@ pub fn extract_title(tags: &taglib::Tag) -> TrackTitle {
         }
         None => {
             // There's no "feat" in here, just return the title whole
-            TrackTitle {
+            TrackFeat {
                 title: title.clone(),
                 featured_artists: Vec::new(),
                 original_title: title.clone(),
