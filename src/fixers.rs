@@ -2,17 +2,29 @@ use taglib;
 use types::{MackError, Track, TrackFeat};
 use extract::extract_feat;
 
-pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool, MackError> {
-    let mut tags = track.tag_file.tag()?;
+pub fn run_fixers(track: &mut Track, _dry_run: bool) -> Result<bool, MackError> {
+    let tags = track.tag_file.tag()?;
 
     fixer_is_blacklisted(&tags)?;
 
+    let new_title = fix_title(&tags);
+
+    println!("{:?}", new_title);
+
+    Ok(new_title.is_some())
+}
+
+fn fix_title(tags: &taglib::Tag) -> Option<String> {
     let old_title = extract_feat(tags.title());
     let old_artist = extract_feat(tags.artist());
 
     let new_title = make_title(&old_title, &old_artist);
 
-    Ok(new_title != old_title.original_title)
+    if new_title != old_title.original_title {
+        Some(new_title)
+    } else {
+        None
+    }
 }
 
 fn make_title(title: &TrackFeat, artist: &TrackFeat) -> String {
@@ -25,8 +37,6 @@ fn make_title(title: &TrackFeat, artist: &TrackFeat) -> String {
         let feat_string = format!(" (feat. {})", feat_artists_string);
         new_title.push_str(&feat_string);
     }
-
-    println!("{}", new_title);
 
     new_title
 }
