@@ -8,6 +8,7 @@ extern crate taglib;
 mod fixers;
 mod track;
 mod types;
+mod extract;
 
 fn build_music_walker(dir: &str) -> Result<ignore::Walk, types::MackError> {
     let mut mt_builder = ignore::types::TypesBuilder::new();

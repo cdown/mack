@@ -20,6 +20,13 @@ pub enum MackError {
     Blacklisted,
 }
 
+#[derive(Debug)]
+pub struct TrackTitle {
+    pub title: String,
+    pub featured_artists: Vec<String>,
+    pub original_title: String,
+}
+
 impl From<taglib::FileError> for MackError {
     fn from(err: taglib::FileError) -> MackError {
         MackError::Tag(err)
