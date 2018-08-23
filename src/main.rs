@@ -21,38 +21,44 @@ fn build_music_walker(dir: &str) -> Result<ignore::Walk, types::MackError> {
 fn main() {
     let args = clap::App::new("mack")
         .about("The opinionated music library organiser.")
-        .arg(clap::Arg::with_name("DIR").index(1))
+        .arg(clap::Arg::with_name("DIR").multiple(true))
         .arg(clap::Arg::with_name("dry_run").long("dry-run").short("n"))
         .get_matches();
 
-    let walker = build_music_walker(args.value_of("DIR").unwrap_or(".")).expect(
-        "Error building music walker",
-    );
-    for result in walker {
-        match result {
-            Ok(entry) => {
-                let path = entry.path().to_path_buf();
-                if path.is_file() {
-                    match track::get_track(path) {
-                        Ok(mut track) => {
-                            let fix_results =
-                                fixers::run_fixers(&mut track, args.is_present("dry_run"));
-                            match fix_results {
-                                Ok(applied_fixers) => {
-                                    if applied_fixers {
-                                        track::print_track_info(&track);
+    let mut dirs: Vec<&str> =
+        args.values_of("DIR").expect("A provided directory is not valid UTF-8").collect();
+    if dirs.is_empty() {
+        dirs.push(".");
+    }
+
+    for dir in dirs {
+        let walker = build_music_walker(dir).expect("Error building music walker");
+        for result in walker {
+            match result {
+                Ok(entry) => {
+                    let path = entry.path().to_path_buf();
+                    if path.is_file() {
+                        match track::get_track(path) {
+                            Ok(mut track) => {
+                                let fix_results =
+                                    fixers::run_fixers(&mut track, args.is_present("dry_run"));
+                                match fix_results {
+                                    Ok(applied_fixers) => {
+                                        if applied_fixers {
+                                            track::print_track_info(&track);
+                                        }
+                                    }
+                                    Err(err) => {
+                                        eprintln!("cannot fix {}: {:?}", track.path.display(), err)
                                     }
                                 }
-                                Err(err) => {
-                                    eprintln!("cannot fix {}: {:?}", track.path.display(), err)
-                                }
                             }
+                            Err(err) => eprintln!("error: {:?}", err),
                         }
-                        Err(err) => eprintln!("error: {:?}", err),
                     }
                 }
+                Err(err) => eprintln!("error: {}", err),
             }
-            Err(err) => eprintln!("error: {}", err),
         }
     }
 }
