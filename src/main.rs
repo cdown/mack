@@ -39,7 +39,7 @@ fn main() {
                                 fixers::run_fixers(&mut track, args.is_present("dry_run"));
                             match fix_results {
                                 Ok(applied_fixers) => {
-                                    if !applied_fixers.is_empty() {
+                                    if applied_fixers {
                                         track::print_track_info(&track);
                                     }
                                 }

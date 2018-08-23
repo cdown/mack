@@ -8,12 +8,6 @@ pub struct Track {
 }
 
 #[derive(Debug)]
-pub enum Fixer {
-    FEAT,
-    WHITESPACE,
-}
-
-#[derive(Debug)]
 pub enum MackError {
     Tag(taglib::FileError),
     Ignore(ignore::Error),

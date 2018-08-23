@@ -1,5 +1,4 @@
 use regex::{Regex, RegexBuilder};
-use taglib;
 use types::TrackFeat;
 
 static AMP_SPLIT: &'static str = " & ";

@@ -1,25 +1,29 @@
 use taglib;
-use types::{Fixer, MackError, Track};
+use types::{MackError, Track, TrackFeat};
 use extract::extract_feat;
 
-pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<Vec<Fixer>, MackError> {
-    let mut applied_fixers = Vec::new();
+pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool, MackError> {
     let mut tags = track.tag_file.tag()?;
 
     fixer_is_blacklisted(&tags)?;
 
-    println!("{:?}", extract_feat(tags.title()));
+    let old_title = extract_feat(tags.title());
+    let old_artist = extract_feat(tags.artist());
 
-    // TODO: rework fixers to use TrackTitle and ilk
-    applied_fixers.push(None);
+    let new_title = make_title(&old_title, &old_artist);
 
-    let applied_fixers: Vec<Fixer> = applied_fixers.into_iter().flat_map(|x| x).collect();
+    Ok(new_title != old_title.original_title)
+}
 
-    if !dry_run && !applied_fixers.is_empty() {
-        track.tag_file.save();
-    }
+fn make_title(title: &TrackFeat, artist: &TrackFeat) -> String {
+    let mut featured_artists = title.featured_artists.clone();
+    featured_artists.extend(artist.featured_artists.clone());
 
-    Ok(applied_fixers)
+    let new_title = format!("{} (feat. {:?})", title.title, featured_artists);
+
+    println!("{}", new_title);
+
+    new_title
 }
 
 fn fixer_is_blacklisted(tags: &taglib::Tag) -> Result<(), MackError> {
