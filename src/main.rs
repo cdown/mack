@@ -12,7 +12,9 @@ mod extract;
 
 fn build_music_walker(dir: &str) -> Result<ignore::Walk, types::MackError> {
     let mut mt_builder = ignore::types::TypesBuilder::new();
-    mt_builder.add("music", "*.mp3")?;
+    for glob in &["*.mp3", "*.flac"] {
+        mt_builder.add("music", glob)?;
+    }
     mt_builder.select("music");
     let music_types = mt_builder.build()?;
     Ok(ignore::WalkBuilder::new(dir).types(music_types).build())
