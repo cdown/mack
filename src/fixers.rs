@@ -1,7 +1,7 @@
-use taglib;
 use regex::Regex;
 use types::{MackError, Track, TrackFeat};
 use extract::extract_feat;
+use taglib::Tag;
 
 lazy_static! {
     static ref MULTI_WS_RE: Regex = Regex::new(r#"[ \t]+"#).expect("BUG: Invalid regex");
@@ -69,7 +69,7 @@ fn make_feat_string(featured_artists: Vec<String>) -> String {
     output
 }
 
-fn fixer_is_blacklisted(tags: &taglib::Tag) -> Result<(), MackError> {
+fn fixer_is_blacklisted(tags: &Tag) -> Result<(), MackError> {
     if tags.comment().contains("_NO_MACK") { Err(MackError::Blacklisted) } else { Ok(()) }
 }
 
