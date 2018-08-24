@@ -9,8 +9,11 @@ mod fixers;
 mod track;
 mod types;
 mod extract;
+mod rename;
 
-fn build_music_walker(dir: &str) -> Result<ignore::Walk, types::MackError> {
+use std::path::PathBuf;
+
+fn build_music_walker(dir: &PathBuf) -> Result<ignore::Walk, types::MackError> {
     let mut mt_builder = ignore::types::TypesBuilder::new();
     for glob in &["*.mp3", "*.flac"] {
         mt_builder.add("music", glob)?;
@@ -33,8 +36,8 @@ fn parse_args<'a>() -> clap::ArgMatches<'a> {
         .get_matches()
 }
 
-fn fix_track(mut track: types::Track, dry_run: bool) {
-    let fix_results = fixers::run_fixers(&mut track, dry_run);
+fn fix_track(track: &mut types::Track, dry_run: bool) {
+    let fix_results = fixers::run_fixers(track, dry_run);
     match fix_results {
         Ok(applied_fixers) => {
             if applied_fixers {
@@ -45,15 +48,31 @@ fn fix_track(mut track: types::Track, dry_run: bool) {
     }
 }
 
-fn fix_all_tracks(path: &str, dry_run: bool) {
-    let walker = build_music_walker(path).expect("BUG: Error building music walker");
+fn rename_track(track: &types::Track, base_path: &PathBuf, _dry_run: bool) {
+    let new_path = rename::make_relative_rename_path(&track, &base_path);
+
+    match new_path {
+        Ok(new_path) => {
+            if track.path != new_path {
+                println!("Would rename {} to {}", track.path.display(), new_path.display());
+            }
+        },
+        Err(err) => eprintln!("cannot rename {}: {:?}", track.path.display(), err),
+    }
+}
+
+fn fix_all_tracks(base_path: PathBuf, dry_run: bool) {
+    let walker = build_music_walker(&base_path).expect("BUG: Error building music walker");
     for result in walker {
         match result {
             Ok(entry) => {
                 let path = entry.path().to_path_buf();
                 if path.is_file() {
                     match track::get_track(path) {
-                        Ok(mut track) => fix_track(track, dry_run),
+                        Ok(mut track) => {
+                            fix_track(&mut track, dry_run);
+                            rename_track(&mut track, &base_path, dry_run);
+                        }
                         Err(err) => eprintln!("error: {:?}", err),
                     }
                 }
@@ -65,7 +84,12 @@ fn fix_all_tracks(path: &str, dry_run: bool) {
 
 fn main() {
     let args = parse_args();
-    for path in args.values_of("PATH").expect("BUG: missing default path").collect::<Vec<&str>>() {
+    for raw_path in args.values_of("PATH")
+        .expect("BUG: missing default path")
+        .collect::<Vec<&str>>()
+    {
+        let mut path = PathBuf::new();
+        path.push(raw_path);
         fix_all_tracks(path, args.is_present("dry_run"));
     }
 }
