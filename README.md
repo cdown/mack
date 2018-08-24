@@ -1,3 +1,5 @@
+[![Tests](https://img.shields.io/travis/cdown/mack/master.svg)](https://travis-ci.org/cdown/mack)
+
 mack is to music files as [black][black] is to code formatting. It enforces
 standards around both consistency of the metadata (eg. ID3 version) and the
 metadata itself (eg. "feat" tagging).
