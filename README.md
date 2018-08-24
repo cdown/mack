@@ -4,8 +4,8 @@ metadata itself (eg. "feat" tagging).
 
 # Examples of fixes
 
-- Featured artist from artist to title
-- Enforced "feat" format title tag
+- Moving featured artists from the artist tag to the title
+- Enforcing a consistent "feat" format in title tags
 - Whitespace normalisation
 
 # Usage
