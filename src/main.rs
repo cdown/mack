@@ -43,27 +43,29 @@ fn fix_track(mut track: types::Track, dry_run: bool) {
         }
         Err(err) => eprintln!("cannot fix {}: {:?}", track.path.display(), err),
     }
+}
 
+fn fix_all_tracks(path: &str, dry_run: bool) {
+    let walker = build_music_walker(path).expect("BUG: Error building music walker");
+    for result in walker {
+        match result {
+            Ok(entry) => {
+                let path = entry.path().to_path_buf();
+                if path.is_file() {
+                    match track::get_track(path) {
+                        Ok(mut track) => fix_track(track, dry_run),
+                        Err(err) => eprintln!("error: {:?}", err),
+                    }
+                }
+            }
+            Err(err) => eprintln!("error: {}", err),
+        }
+    }
 }
 
 fn main() {
     let args = parse_args();
-
     for path in args.values_of("PATH").expect("BUG: missing default path").collect::<Vec<&str>>() {
-        let walker = build_music_walker(path).expect("BUG: Error building music walker");
-        for result in walker {
-            match result {
-                Ok(entry) => {
-                    let path = entry.path().to_path_buf();
-                    if path.is_file() {
-                        match track::get_track(path) {
-                            Ok(mut track) => fix_track(track, args.is_present("dry_run")),
-                            Err(err) => eprintln!("error: {:?}", err),
-                        }
-                    }
-                }
-                Err(err) => eprintln!("error: {}", err),
-            }
-        }
+        fix_all_tracks(path, args.is_present("dry_run"));
     }
 }
