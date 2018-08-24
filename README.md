@@ -14,6 +14,19 @@ metadata itself (eg. "feat" tagging).
 
 You can also see what would be changed first using `--dry-run`.
 
+# Building
+
+You need [TagLib](http://taglib.org/) installed on your system to build. This
+can be found in the following packages:
+
+- Arch Linux: [taglib](https://www.archlinux.org/packages/extra/x86_64/taglib/)
+- CentOS/Fedora: taglib
+- Gentoo: [media-libs/taglib](https://packages.gentoo.org/packages/media-libs/taglib)
+- Ubuntu/Debian: [libtagc0-dev](https://packages.debian.org/search?searchon=names&keywords=libtagc0-dev)
+
+
+After that, `cargo build` as normal.
+
 # Configuration
 
 In a similar philosophy to [black][black], most things cannot be configured --
