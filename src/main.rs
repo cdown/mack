@@ -20,8 +20,8 @@ fn build_music_walker(dir: &str) -> Result<ignore::Walk, types::MackError> {
     Ok(ignore::WalkBuilder::new(dir).types(music_types).build())
 }
 
-fn main() {
-    let args = clap::App::new("mack")
+fn parse_args<'a>() -> clap::ArgMatches<'a> {
+    clap::App::new("mack")
         .version("0.1.0")
         .about("The opinionated music library organiser.")
         .arg(clap::Arg::with_name("PATH").multiple(true).help(
@@ -30,7 +30,11 @@ fn main() {
         .arg(clap::Arg::with_name("dry_run").long("dry-run").short("n").help(
             "Show what we would do, but don't do it",
         ))
-        .get_matches();
+        .get_matches()
+}
+
+fn main() {
+    let args = parse_args();
 
     let paths: Vec<&str> = match args.values_of("PATH") {
         Some(paths) => paths.collect(),
