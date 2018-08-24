@@ -4,7 +4,7 @@ use types::{MackError, Track, TrackFeat};
 use extract::extract_feat;
 
 lazy_static! {
-    static ref MULTI_WS_RE: Regex = Regex::new(r#"[ \t]+"#).unwrap();
+    static ref MULTI_WS_RE: Regex = Regex::new(r#"[ \t]+"#).expect("BUG: Invalid regex");
 }
 
 pub fn run_fixers(track: &mut Track, _dry_run: bool) -> Result<bool, MackError> {

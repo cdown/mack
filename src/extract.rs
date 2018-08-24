@@ -6,8 +6,10 @@ const AMP_SPLITS: &'static [&'static str] = &[" & ", " and "];
 lazy_static! {
     static ref FEAT_RE: Regex = RegexBuilder::new(
         r#" [(\[]?f(ea)?t[a-z]*\.? (?P<feat_artists>[^)\]]+)[)\]]?"#
-    ).case_insensitive(true).build().unwrap();
-    static ref FEAT_ARTIST_SPLIT: Regex = Regex::new(r#", (?:and |& )?"#).unwrap();
+    ).case_insensitive(true).build().expect("BUG: Invalid regex");
+    static ref FEAT_ARTIST_SPLIT: Regex = Regex::new(
+        r#", (?:and |& )?"#
+    ).expect("BUG: Invalid regex");
 }
 
 pub fn extract_feat(title: String) -> TrackFeat {
@@ -20,7 +22,7 @@ pub fn extract_feat(title: String) -> TrackFeat {
             assert!(!feat_artists.is_empty());
 
             let last_artist =
-                feat_artists.last().expect("BUG: despite assert, no featured artists").clone();
+                feat_artists.last().expect("BUG: assert failed to ensure featured artists").clone();
 
             // If the last artist contains an "&", we'll split on it, even without a comma. This
             // isn't perfect, but is mostly right.

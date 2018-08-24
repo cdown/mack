@@ -33,7 +33,7 @@ fn main() {
     };
 
     for dir in dirs {
-        let walker = build_music_walker(dir).expect("Error building music walker");
+        let walker = build_music_walker(dir).expect("BUG: Error building music walker");
         for result in walker {
             match result {
                 Ok(entry) => {
