@@ -7,7 +7,7 @@ lazy_static! {
     static ref FEAT_RE: Regex = RegexBuilder::new(
         r#" [(\[]?f(ea)?t[a-z]*\.? (?P<feat_artists>[^)\]]+)[)\]]?"#
     ).case_insensitive(true).build().unwrap();
-    static ref FEAT_ARTIST_SPLIT: Regex = Regex::new(r#", (?:and|&)?"#).unwrap();
+    static ref FEAT_ARTIST_SPLIT: Regex = Regex::new(r#", (?:and |& )?"#).unwrap();
 }
 
 pub fn extract_feat(title: String) -> TrackFeat {
@@ -86,6 +86,21 @@ mod tests {
         let expected = TrackFeat {
             title: "A plain title".to_owned(),
             featured_artists: vec!["Foo Bar".to_owned(), "Baz Qux".to_owned()],
+            original_title: given.clone(),
+        };
+        assert_eq!(extract_feat(given), expected);
+    }
+
+    #[test]
+    fn test_extract_feat_with_feat_many() {
+        let given = "A plain title feat Foo Bar, Baz Qux, and Wibble Wobble".to_owned();
+        let expected = TrackFeat {
+            title: "A plain title".to_owned(),
+            featured_artists: vec![
+                "Foo Bar".to_owned(),
+                "Baz Qux".to_owned(),
+                "Wibble Wobble".to_owned(),
+            ],
             original_title: given.clone(),
         };
         assert_eq!(extract_feat(given), expected);
