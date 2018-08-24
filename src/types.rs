@@ -12,6 +12,7 @@ pub enum MackError {
     Tag(taglib::FileError),
     Ignore(ignore::Error),
     Blacklisted,
+    InvalidUnicode,
 }
 
 #[derive(Debug, PartialEq)]

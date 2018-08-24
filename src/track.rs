@@ -3,17 +3,7 @@ use types::{MackError, Track};
 use std::path::PathBuf;
 
 pub fn get_track(path: PathBuf) -> Result<Track, MackError> {
-    let tl_path = path.clone();
-    let file = match tl_path.to_str() {
-        Some(file) => file,
-        None => {
-            let msg =
-                format!("Path {:?} contains non-Unicode. This is not supported, so bailing.", path);
-            panic!(msg);
-        }
-    };
-
-    let tag_file = taglib::File::new(file)?;
+    let tag_file = taglib::File::new(path.clone().to_str().ok_or(MackError::InvalidUnicode)?)?;
     Ok(Track {
         path: path,
         tag_file: tag_file,
