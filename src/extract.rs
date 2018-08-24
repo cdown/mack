@@ -19,10 +19,8 @@ pub fn extract_feat(title: String) -> TrackFeat {
         Some(caps) => {
             let mut feat_artists: Vec<String> =
                 FEAT_ARTIST_SPLIT.split(&caps["feat_artists"]).map(|x| x.to_owned()).collect();
-            assert!(!feat_artists.is_empty());
-
             let last_artist =
-                feat_artists.last().expect("BUG: assert failed to ensure featured artists").clone();
+                feat_artists.last().expect("BUG: captured, but no featured artists").clone();
 
             // If the last artist contains an "&", we'll split on it, even without a comma. This
             // isn't perfect, but is mostly right.
