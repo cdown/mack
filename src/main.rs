@@ -25,7 +25,7 @@ fn main() {
         .version("0.1.0")
         .about("The opinionated music library organiser.")
         .arg(clap::Arg::with_name("PATH").multiple(true).help(
-            "Paths to fix, directories are recursed into",
+            "Paths to fix, directories are recursed into (default: the current directory)",
         ))
         .arg(clap::Arg::with_name("dry_run").long("dry-run").short("n").help(
             "Show what we would do, but don't do it",
