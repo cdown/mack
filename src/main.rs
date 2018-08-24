@@ -22,7 +22,7 @@ fn build_music_walker(dir: &str) -> Result<ignore::Walk, types::MackError> {
 
 fn main() {
     let args = clap::App::new("mack")
-        .version("0.0.0")
+        .version("0.1.0")
         .about("The opinionated music library organiser.")
         .arg(clap::Arg::with_name("PATH").multiple(true).help(
             "Paths to fix, directories are recursed into",
