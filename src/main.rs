@@ -22,18 +22,23 @@ fn build_music_walker(dir: &str) -> Result<ignore::Walk, types::MackError> {
 
 fn main() {
     let args = clap::App::new("mack")
+        .version("0.0.0")
         .about("The opinionated music library organiser.")
-        .arg(clap::Arg::with_name("DIR").multiple(true))
-        .arg(clap::Arg::with_name("dry_run").long("dry-run").short("n"))
+        .arg(clap::Arg::with_name("PATH").multiple(true).help(
+            "Paths to fix, directories are recursed into",
+        ))
+        .arg(clap::Arg::with_name("dry_run").long("dry-run").short("n").help(
+            "Show what we would do, but don't do it",
+        ))
         .get_matches();
 
-    let dirs: Vec<&str> = match args.values_of("DIR") {
-        Some(dirs) => dirs.collect(),
+    let paths: Vec<&str> = match args.values_of("PATH") {
+        Some(paths) => paths.collect(),
         None => vec!["."],
     };
 
-    for dir in dirs {
-        let walker = build_music_walker(dir).expect("BUG: Error building music walker");
+    for path in paths {
+        let walker = build_music_walker(path).expect("BUG: Error building music walker");
         for result in walker {
             match result {
                 Ok(entry) => {
