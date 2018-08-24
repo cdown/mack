@@ -12,20 +12,20 @@ pub fn run_fixers(track: &mut Track, _dry_run: bool) -> Result<bool, MackError> 
 
     fixer_is_blacklisted(&tags)?;
 
-    let new_title = fix_title(&tags);
-    let new_artist = fix_artist(&tags);
+    let new_title = fix_title(tags.title(), tags.artist());
+    let new_artist = fix_artist(tags.artist());
 
     Ok(new_title.is_some() || new_artist.is_some())
 }
 
-fn fix_artist(tags: &taglib::Tag) -> Option<String> {
-    let artist = extract_feat(tags.artist());
+fn fix_artist(old_artist: String) -> Option<String> {
+    let artist = extract_feat(old_artist);
     if artist.title != artist.original_title { Some(artist.title) } else { None }
 }
 
-fn fix_title(tags: &taglib::Tag) -> Option<String> {
-    let old_title = extract_feat(tags.title());
-    let old_artist = extract_feat(tags.artist());
+fn fix_title(old_title: String, old_artist: String) -> Option<String> {
+    let old_title = extract_feat(old_title);
+    let old_artist = extract_feat(old_artist);
 
     let new_title = make_title(&old_title, &old_artist);
 
@@ -71,4 +71,23 @@ fn make_feat_string(featured_artists: Vec<String>) -> String {
 
 fn fixer_is_blacklisted(tags: &taglib::Tag) -> Result<(), MackError> {
     if tags.comment().contains("_NO_MACK") { Err(MackError::Blacklisted) } else { Ok(()) }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_fix_artist_no_feat() {
+        let given = "Foo Bar".to_owned();
+        let expected = None;
+        assert_eq!(fix_artist(given), expected);
+    }
+
+    #[test]
+    fn test_fix_artist_with_feat() {
+        let given = "Foo Bar (feat. Baz Qux)".to_owned();
+        let expected = Some("Foo Bar".to_owned());
+        assert_eq!(fix_artist(given), expected);
+    }
 }
