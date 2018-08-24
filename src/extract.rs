@@ -50,3 +50,19 @@ pub fn extract_feat(title: String) -> TrackFeat {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_extract_feat_no_feat() {
+        let given = "A plain title".to_owned();
+        let expected = TrackFeat {
+            title: given.clone(),
+            featured_artists: Vec::new(),
+            original_title: given.clone(),
+        };
+        assert_eq!(extract_feat(given), expected);
+    }
+}

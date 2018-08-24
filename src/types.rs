@@ -14,7 +14,7 @@ pub enum MackError {
     Blacklisted,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct TrackFeat {
     pub title: String,
     pub featured_artists: Vec<String>,
