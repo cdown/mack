@@ -33,6 +33,19 @@ fn parse_args<'a>() -> clap::ArgMatches<'a> {
         .get_matches()
 }
 
+fn fix_track(mut track: types::Track, dry_run: bool) {
+    let fix_results = fixers::run_fixers(&mut track, dry_run);
+    match fix_results {
+        Ok(applied_fixers) => {
+            if applied_fixers {
+                track::print_track_info(&track);
+            }
+        }
+        Err(err) => eprintln!("cannot fix {}: {:?}", track.path.display(), err),
+    }
+
+}
+
 fn main() {
     let args = parse_args();
 
@@ -44,20 +57,7 @@ fn main() {
                     let path = entry.path().to_path_buf();
                     if path.is_file() {
                         match track::get_track(path) {
-                            Ok(mut track) => {
-                                let fix_results =
-                                    fixers::run_fixers(&mut track, args.is_present("dry_run"));
-                                match fix_results {
-                                    Ok(applied_fixers) => {
-                                        if applied_fixers {
-                                            track::print_track_info(&track);
-                                        }
-                                    }
-                                    Err(err) => {
-                                        eprintln!("cannot fix {}: {:?}", track.path.display(), err)
-                                    }
-                                }
-                            }
+                            Ok(mut track) => fix_track(track, args.is_present("dry_run")),
                             Err(err) => eprintln!("error: {:?}", err),
                         }
                     }
