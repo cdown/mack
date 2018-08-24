@@ -90,4 +90,36 @@ mod tests {
         let expected = Some("Foo Bar".to_owned());
         assert_eq!(fix_artist(given), expected);
     }
+
+    #[test]
+    fn test_fix_title_no_title_feat_no_artist_feat() {
+        let given_title = "Foo Bar".to_owned();
+        let given_artist = "Baz Qux".to_owned();
+        let expected = None;
+        assert_eq!(fix_title(given_title, given_artist), expected);
+    }
+
+    #[test]
+    fn test_fix_title_with_title_feat_no_artist_feat() {
+        let given_title = "Foo Bar (feat. Wibble Wobble)".to_owned();
+        let given_artist = "Baz Qux".to_owned();
+        let expected = None;
+        assert_eq!(fix_title(given_title, given_artist), expected);
+    }
+
+    #[test]
+    fn test_fix_title_no_title_feat_with_artist_feat() {
+        let given_title = "Foo Bar".to_owned();
+        let given_artist = "Baz Qux feat. Fizz Buzz".to_owned();
+        let expected = Some("Foo Bar (feat. Fizz Buzz)".to_owned());
+        assert_eq!(fix_title(given_title, given_artist), expected);
+    }
+
+    #[test]
+    fn test_fix_title_with_title_feat_and_artist_feat() {
+        let given_title = "Foo Bar (feat. Wibble Wobble)".to_owned();
+        let given_artist = "Baz Qux feat. Fizz Buzz".to_owned();
+        let expected = Some("Foo Bar (feat. Wibble Wobble and Fizz Buzz)".to_owned());
+        assert_eq!(fix_title(given_title, given_artist), expected);
+    }
 }
