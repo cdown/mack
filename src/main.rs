@@ -24,7 +24,7 @@ fn parse_args<'a>() -> clap::ArgMatches<'a> {
     clap::App::new("mack")
         .version("0.1.0")
         .about("The opinionated music library organiser.")
-        .arg(clap::Arg::with_name("PATH").multiple(true).help(
+        .arg(clap::Arg::with_name("PATH").multiple(true).default_value(".").help(
             "Paths to fix, directories are recursed into (default: the current directory)",
         ))
         .arg(clap::Arg::with_name("dry_run").long("dry-run").short("n").help(
@@ -36,12 +36,7 @@ fn parse_args<'a>() -> clap::ArgMatches<'a> {
 fn main() {
     let args = parse_args();
 
-    let paths: Vec<&str> = match args.values_of("PATH") {
-        Some(paths) => paths.collect(),
-        None => vec!["."],
-    };
-
-    for path in paths {
+    for path in args.values_of("PATH").expect("BUG: missing default path").collect::<Vec<&str>>() {
         let walker = build_music_walker(path).expect("BUG: Error building music walker");
         for result in walker {
             match result {
