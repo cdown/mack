@@ -19,7 +19,7 @@ pub fn make_relative_rename_path(track: &Track, base_path: &PathBuf) -> Result<P
         .extension()
         .expect("BUG: ext required in walkbuilder, but missing")
         .to_str()
-        .expect("BUG: we filter on valid UTF-8 extensions, but this one isn't");
+        .ok_or(MackError::InvalidUnicode)?;
 
     let raw_filename = format!("{:02} {}.{}", tags.track(), tags.title(), extension);
     path.push(&sanitise_path_part(raw_filename));
