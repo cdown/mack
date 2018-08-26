@@ -2,6 +2,11 @@
 name = "mack"
 version = "0.1.0"
 authors = ["Chris Down <chris@chrisdown.name>"]
+description = "An opinionated, fast music organiser."
+homepage = "https://github.com/cdown/mack"
+readme = "README.md"
+keywords = ["music", "audio", "music organiser", "tagging", "mp3"]
+license = "Public Domain"
 
 [dependencies]
 clap = "*"
