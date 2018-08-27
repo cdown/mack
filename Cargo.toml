@@ -13,4 +13,4 @@ clap = "*"
 ignore = "*"
 lazy_static = "*"
 regex = "*"
-taglib = { git = "https://github.com/ebassi/taglib-rust", rev = "781c4f431639c10868fea020dfb0eb8d74954653"}
+taglib = "*"
