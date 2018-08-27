@@ -56,7 +56,7 @@ fn rename_track(track: &types::Track, base_path: &PathBuf, _dry_run: bool) {
             if track.path != new_path {
                 println!("Would rename {} to {}", track.path.display(), new_path.display());
             }
-        },
+        }
         Err(err) => eprintln!("cannot rename {}: {:?}", track.path.display(), err),
     }
 }

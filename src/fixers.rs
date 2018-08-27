@@ -18,14 +18,22 @@ pub fn run_fixers(track: &mut Track, _dry_run: bool) -> Result<bool, MackError> 
     Ok(new_title.is_some() || new_artist.is_some())
 }
 
-fn fix_artist(old_artist: String) -> Option<String> {
-    let artist = extract_feat(old_artist);
+fn fix_artist(old_artist: impl Into<Option<String>>) -> Option<String> {
+    let artist = extract_feat(old_artist.into().unwrap_or_default());
     if artist.title != artist.original_title { Some(artist.title) } else { None }
 }
 
-fn fix_title(old_title: String, old_artist: String) -> Option<String> {
+fn fix_title(
+    old_title: impl Into<Option<String>>,
+    old_artist: impl Into<Option<String>>,
+) -> Option<String> {
+    let old_title = match old_title.into() {
+        Some(old_title) => old_title,
+        None => return None,
+    };
+
     let old_title = extract_feat(old_title);
-    let old_artist = extract_feat(old_artist);
+    let old_artist = extract_feat(old_artist.into().unwrap_or_default());
 
     let new_title = make_title(&old_title, &old_artist);
 
@@ -70,7 +78,11 @@ fn make_feat_string(featured_artists: Vec<String>) -> String {
 }
 
 fn fixer_is_blacklisted(tags: &Tag) -> Result<(), MackError> {
-    if tags.comment().contains("_NO_MACK") { Err(MackError::Blacklisted) } else { Ok(()) }
+    if tags.comment().unwrap_or_default().contains("_NO_MACK") {
+        Err(MackError::Blacklisted)
+    } else {
+        Ok(())
+    }
 }
 
 #[cfg(test)]

@@ -18,11 +18,11 @@ pub fn print_track_info(track: &Track) -> () {
     match tags {
         Ok(tags) => {
             println!("{}:", track.path.display());
-            println!("- Album:   {}", tags.album());
-            println!("- Artist:  {}", tags.artist());
-            println!("- Title:   {}", tags.title());
-            println!("- Track #: {}", tags.track());
-            println!("- Year:    {}\n", tags.year());
+            println!("- Album:   {}", tags.album().unwrap_or("Unknown".to_owned()));
+            println!("- Artist:  {}", tags.artist().unwrap_or("Unknown".to_owned()));
+            println!("- Title:   {}", tags.title().unwrap_or("Unknown".to_owned()));
+            println!("- Track #: {}", tags.track().unwrap_or(0));
+            println!("- Year:    {}\n", tags.year().unwrap_or(0));
         }
         Err(err) => eprintln!("error printing track info: {}: {:?}", track.path.display(), err),
     }

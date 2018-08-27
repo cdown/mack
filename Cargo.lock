@@ -121,7 +121,7 @@ dependencies = [
  "ignore 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "taglib 0.2.0 (git+https://github.com/ebassi/taglib-rust?rev=513dabf1c56c)",
+ "taglib 0.2.0 (git+https://github.com/ebassi/taglib-rust?rev=781c4f431639c10868fea020dfb0eb8d74954653)",
 ]
 
 [[package]]
@@ -181,16 +181,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "taglib"
 version = "0.2.0"
-source = "git+https://github.com/ebassi/taglib-rust?rev=513dabf1c56c#513dabf1c56cc9a327e4e21afb7bbf0cc4b432e8"
+source = "git+https://github.com/ebassi/taglib-rust?rev=781c4f431639c10868fea020dfb0eb8d74954653#781c4f431639c10868fea020dfb0eb8d74954653"
 dependencies = [
  "libc 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
- "taglib-sys 0.2.0 (git+https://github.com/ebassi/taglib-rust?rev=513dabf1c56c)",
+ "taglib-sys 0.2.0 (git+https://github.com/ebassi/taglib-rust?rev=781c4f431639c10868fea020dfb0eb8d74954653)",
 ]
 
 [[package]]
 name = "taglib-sys"
 version = "0.2.0"
-source = "git+https://github.com/ebassi/taglib-rust?rev=513dabf1c56c#513dabf1c56cc9a327e4e21afb7bbf0cc4b432e8"
+source = "git+https://github.com/ebassi/taglib-rust?rev=781c4f431639c10868fea020dfb0eb8d74954653#781c4f431639c10868fea020dfb0eb8d74954653"
 dependencies = [
  "libc 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -305,8 +305,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum regex-syntax 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)" = "747ba3b235651f6e2f67dfa8bcdcd073ddb7c243cb21c442fc12395dfcac212d"
 "checksum same-file 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "10f7794e2fda7f594866840e95f5c5962e886e228e68b6505885811a94dd728c"
 "checksum strsim 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "bb4f380125926a99e52bc279241539c018323fab05ad6368b56f93d9369ff550"
-"checksum taglib 0.2.0 (git+https://github.com/ebassi/taglib-rust?rev=513dabf1c56c)" = "<none>"
-"checksum taglib-sys 0.2.0 (git+https://github.com/ebassi/taglib-rust?rev=513dabf1c56c)" = "<none>"
+"checksum taglib 0.2.0 (git+https://github.com/ebassi/taglib-rust?rev=781c4f431639c10868fea020dfb0eb8d74954653)" = "<none>"
+"checksum taglib-sys 0.2.0 (git+https://github.com/ebassi/taglib-rust?rev=781c4f431639c10868fea020dfb0eb8d74954653)" = "<none>"
 "checksum termion 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "689a3bdfaab439fd92bc87df5c4c78417d3cbe537487274e9b0b2dce76e92096"
 "checksum textwrap 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)" = "307686869c93e71f94da64286f9a9524c0f308a9e1c87a583de8e9c9039ad3f6"
 "checksum thread_local 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)" = "c6b53e329000edc2b34dbe8545fd20e55a333362d0a321909685a19bd28c3f1b"
