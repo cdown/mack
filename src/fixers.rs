@@ -7,15 +7,29 @@ lazy_static! {
     static ref MULTI_WS_RE: Regex = Regex::new(r#"[ \t]+"#).expect("BUG: Invalid regex");
 }
 
-pub fn run_fixers(track: &mut Track, _dry_run: bool) -> Result<bool, MackError> {
-    let tags = track.tag_file.tag()?;
+pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool, MackError> {
+    let mut tags = track.tag_file.tag()?;
 
     fixer_is_blacklisted(&tags)?;
 
     let new_title = fix_title(tags.title(), tags.artist());
     let new_artist = fix_artist(tags.artist());
 
-    Ok(new_title.is_some() || new_artist.is_some())
+    let changed = new_title.is_some() || new_artist.is_some();
+
+    if !dry_run {
+        if let Some(new_artist) = new_artist {
+            tags.set_artist(&new_artist);
+        }
+        if let Some(new_title) = new_title {
+            tags.set_title(&new_title);
+        }
+        if changed {
+            track.tag_file.save();
+        }
+    }
+
+    Ok(changed)
 }
 
 fn fix_artist(old_artist: impl Into<Option<String>>) -> Option<String> {

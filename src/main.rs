@@ -48,15 +48,14 @@ fn fix_track(track: &mut types::Track, dry_run: bool) {
     }
 }
 
-fn rename_track(track: &types::Track, base_path: &PathBuf, _dry_run: bool) {
-    let new_path = rename::make_relative_rename_path(&track, &base_path);
+fn rename_track(track: &types::Track, base_path: &PathBuf, dry_run: bool) {
+    let new_path = rename::rename_track(&track, &base_path, dry_run);
 
     match new_path {
-        Ok(new_path) => {
-            if track.path != new_path {
-                println!("Would rename {} to {}", track.path.display(), new_path.display());
-            }
+        Ok(Some(new_path)) => {
+            println!("Would rename {} to {}", track.path.display(), new_path.display())
         }
+        Ok(None) => (),
         Err(err) => eprintln!("cannot rename {}: {:?}", track.path.display(), err),
     }
 }

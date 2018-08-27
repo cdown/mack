@@ -1,5 +1,6 @@
 use types::{MackError, Track};
 use std::path::PathBuf;
+use std::fs;
 
 /// TODO: Currently only filters out names guaranteed to be incompatible with POSIX filesystems
 fn sanitise_path_part(path_part: String) -> String {
@@ -7,7 +8,7 @@ fn sanitise_path_part(path_part: String) -> String {
 }
 
 /// artist/album/2digitnum title.ext
-pub fn make_relative_rename_path(track: &Track, base_path: &PathBuf) -> Result<PathBuf, MackError> {
+fn make_relative_rename_path(track: &Track, base_path: &PathBuf) -> Result<PathBuf, MackError> {
     let tags = track.tag_file.tag()?;
     let mut path = base_path.clone();
 
@@ -30,4 +31,22 @@ pub fn make_relative_rename_path(track: &Track, base_path: &PathBuf) -> Result<P
     path.push(&sanitise_path_part(raw_filename));
 
     Ok(path)
+}
+
+pub fn rename_track(
+    track: &Track,
+    base_path: &PathBuf,
+    dry_run: bool,
+) -> Result<Option<PathBuf>, MackError> {
+    let new_path = make_relative_rename_path(&track, &base_path)?;
+
+    if new_path == track.path {
+        return Ok(None);
+    }
+
+    if !dry_run {
+        fs::rename(&track.path, new_path.clone())?;
+    }
+
+    return Ok(Some(new_path));
 }
