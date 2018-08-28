@@ -41,10 +41,24 @@ fn fix_track(track: &mut types::Track, dry_run: bool) {
     match fix_results {
         Ok(applied_fixers) => {
             if applied_fixers {
-                track::print_track_info(&track);
+                print_updated_tags(track);
             }
         }
         Err(err) => eprintln!("cannot fix {}: {:?}", track.path.display(), err),
+    }
+}
+
+fn print_updated_tags(track: &types::Track) -> () {
+    match track.tag_file.tag() {
+        Ok(tags) => {
+            println!(
+                "{}: updated tags: artist: '{}', title: '{}'",
+                track.path.display(),
+                tags.artist().unwrap_or_default(),
+                tags.title().unwrap_or_default()
+            )
+        }
+        Err(err) => eprintln!("error getting tag info: {}: {:?}", track.path.display(), err),
     }
 }
 
@@ -53,7 +67,7 @@ fn rename_track(track: &types::Track, base_path: &PathBuf, dry_run: bool) {
 
     match new_path {
         Ok(Some(new_path)) => {
-            println!("Would rename {} to {}", track.path.display(), new_path.display())
+            println!("{}: renamed to {}", track.path.display(), new_path.display())
         }
         Ok(None) => (),
         Err(err) => eprintln!("cannot rename {}: {:?}", track.path.display(), err),

@@ -14,16 +14,18 @@ pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool, MackError> {
 
     let new_title = fix_title(tags.title(), tags.artist());
     let new_artist = fix_artist(tags.artist());
+    let mut changed = false;
 
-    let changed = new_title.is_some() || new_artist.is_some();
+    if let Some(new_artist) = new_artist {
+        changed = true;
+        tags.set_artist(&new_artist);
+    }
+    if let Some(new_title) = new_title {
+        changed = true;
+        tags.set_title(&new_title);
+    }
 
     if !dry_run {
-        if let Some(new_artist) = new_artist {
-            tags.set_artist(&new_artist);
-        }
-        if let Some(new_title) = new_title {
-            tags.set_title(&new_title);
-        }
         if changed {
             track.tag_file.save();
         }
