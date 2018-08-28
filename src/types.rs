@@ -1,7 +1,7 @@
 use ignore;
+use std::io;
 use std::path::PathBuf;
 use taglib::{File as TFile, FileError as TFileError};
-use std::io;
 
 pub struct Track {
     pub path: PathBuf,

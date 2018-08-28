@@ -1,7 +1,7 @@
-use regex::Regex;
-use types::{MackError, Track, TrackFeat};
 use extract::extract_feat;
+use regex::Regex;
 use taglib::Tag;
+use types::{MackError, Track, TrackFeat};
 
 lazy_static! {
     static ref MULTI_WS_RE: Regex = Regex::new(r#"[ \t]+"#).expect("BUG: Invalid regex");
@@ -25,18 +25,20 @@ pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool, MackError> {
         tags.set_title(&new_title);
     }
 
-    if !dry_run {
-        if changed {
-            track.tag_file.save();
-        }
+    if !dry_run && changed {
+        track.tag_file.save();
     }
 
     Ok(changed)
 }
 
 fn fix_artist(old_artist: impl Into<Option<String>>) -> Option<String> {
-    let artist = extract_feat(old_artist.into().unwrap_or_default());
-    if artist.title != artist.original_title { Some(artist.title) } else { None }
+    let artist = extract_feat(&old_artist.into().unwrap_or_default());
+    if artist.title != artist.original_title {
+        Some(artist.title)
+    } else {
+        None
+    }
 }
 
 fn fix_title(
@@ -48,12 +50,16 @@ fn fix_title(
         None => return None,
     };
 
-    let old_title = extract_feat(old_title);
-    let old_artist = extract_feat(old_artist.into().unwrap_or_default());
+    let old_title = extract_feat(&old_title);
+    let old_artist = extract_feat(&old_artist.into().unwrap_or_default());
 
     let new_title = make_title(&old_title, &old_artist);
 
-    if new_title != old_title.original_title { Some(new_title) } else { None }
+    if new_title != old_title.original_title {
+        Some(new_title)
+    } else {
+        None
+    }
 }
 
 fn make_title(title: &TrackFeat, artist: &TrackFeat) -> String {
@@ -62,7 +68,7 @@ fn make_title(title: &TrackFeat, artist: &TrackFeat) -> String {
 
     let mut new_title = title.title.clone();
     if !featured_artists.is_empty() {
-        let feat_artists_string = make_feat_string(featured_artists);
+        let feat_artists_string = make_feat_string(&featured_artists);
         let feat_string = format!(" (feat. {})", feat_artists_string);
         new_title.push_str(&feat_string);
     }
@@ -70,7 +76,7 @@ fn make_title(title: &TrackFeat, artist: &TrackFeat) -> String {
     MULTI_WS_RE.replace_all(&new_title, " ").trim().to_owned()
 }
 
-fn make_feat_string(featured_artists: Vec<String>) -> String {
+fn make_feat_string(featured_artists: &[String]) -> String {
     let mut output = "".to_owned();
     let mut artist_idx = 1;
 
