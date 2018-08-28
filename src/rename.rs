@@ -33,6 +33,11 @@ fn make_relative_rename_path(track: &Track, base_path: &PathBuf) -> Result<PathB
     Ok(path)
 }
 
+fn rename_creating_dirs(from: &PathBuf, to: &PathBuf) -> Result<(), MackError> {
+    fs::create_dir_all(&to.parent().ok_or(MackError::WouldMoveToFsRoot)?)?;
+    Ok(fs::rename(&from, &to)?)
+}
+
 pub fn rename_track(
     track: &Track,
     base_path: &PathBuf,
@@ -45,7 +50,7 @@ pub fn rename_track(
     }
 
     if !dry_run {
-        fs::rename(&track.path, new_path.clone())?;
+        rename_creating_dirs(&track.path, &new_path)?;
     }
 
     return Ok(Some(new_path));

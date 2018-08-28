@@ -15,6 +15,7 @@ pub enum MackError {
     Io(io::Error),
     Blacklisted,
     InvalidUnicode,
+    WouldMoveToFsRoot,
 }
 
 #[derive(Debug, PartialEq)]
