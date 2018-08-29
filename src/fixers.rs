@@ -73,7 +73,13 @@ fn make_title(title: &TrackFeat, artist: &TrackFeat) -> String {
         new_title.push_str(&feat_string);
     }
 
-    MULTI_WS_RE.replace_all(&new_title, " ").trim().to_owned()
+    // Optimisation: Most titles don't have multiple whitespaces. Don't even try to replace with
+    // MULTI_WS_RE if we can't find two spaces together.
+    if new_title.contains("  ") {
+        MULTI_WS_RE.replace_all(&new_title, " ").trim().to_owned()
+    } else {
+        new_title
+    }
 }
 
 fn make_feat_string(featured_artists: &[String]) -> String {
