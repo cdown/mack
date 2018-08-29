@@ -4,6 +4,7 @@ extern crate ignore;
 extern crate lazy_static;
 extern crate regex;
 extern crate taglib;
+extern crate titlecase;
 
 mod extract;
 mod fixers;

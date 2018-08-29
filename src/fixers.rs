@@ -2,6 +2,7 @@ use extract::extract_feat;
 use regex::Regex;
 use taglib::Tag;
 use types::{MackError, Track, TrackFeat};
+use titlecase::titlecase;
 
 lazy_static! {
     static ref MULTI_WS_RE: Regex = Regex::new(r#"[ \t]+"#).expect("BUG: Invalid regex");
@@ -66,7 +67,7 @@ fn make_title(title: &TrackFeat, artist: &TrackFeat) -> String {
     let mut featured_artists = title.featured_artists.clone();
     featured_artists.extend(artist.featured_artists.clone());
 
-    let mut new_title = title.title.clone();
+    let mut new_title = titlecase(&title.title);
     if !featured_artists.is_empty() {
         let feat_artists_string = make_feat_string(&featured_artists);
         let feat_string = format!(" (feat. {})", feat_artists_string);
