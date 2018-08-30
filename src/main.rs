@@ -11,7 +11,11 @@ mod rename;
 mod track;
 mod types;
 
-use std::path::PathBuf;
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::time::SystemTime;
+
+const LASTMACK_NAME: &str = ".lastmack";
 
 fn build_music_walker(dir: &PathBuf) -> Result<ignore::Walk, types::MackError> {
     let mut mt_builder = ignore::types::TypesBuilder::new();
@@ -84,13 +88,56 @@ fn rename_track(track: &types::Track, base_path: &PathBuf, dry_run: bool) {
     }
 }
 
+fn make_lastmack_path(base_path: &PathBuf) -> PathBuf {
+    let mut last_run_path = base_path.clone();
+    last_run_path.push(LASTMACK_NAME);
+    last_run_path
+}
+
+fn get_last_run_time(base_path: &PathBuf) -> Option<SystemTime> {
+    let last_run_path = make_lastmack_path(&base_path);
+    match get_mtime(&last_run_path) {
+        Ok(mtime) => Some(mtime),
+        Err(err) => {
+            eprintln!(
+                "can't get time from {}, checking all: {:?}",
+                last_run_path.display(),
+                err
+            );
+            None
+        }
+    }
+}
+
+fn get_mtime<T: AsRef<Path>>(path: T) -> Result<SystemTime, types::MackError> {
+    let stat = fs::metadata(path.as_ref())?;
+    Ok(stat.modified()?)
+}
+
+fn set_last_run_time(base_path: &PathBuf) -> Result<(), types::MackError> {
+    let last_run_path = make_lastmack_path(&base_path);
+    fs::File::create(&last_run_path)?;
+    Ok(())
+}
+
+fn mtime_def_now<T: AsRef<Path>>(path: T) -> SystemTime {
+    get_mtime(path.as_ref()).unwrap_or_else(|_| SystemTime::now())
+}
+
 fn fix_all_tracks(base_path: &PathBuf, dry_run: bool) {
+    let last_run_time = get_last_run_time(&base_path).unwrap_or(SystemTime::UNIX_EPOCH);
     let walker = build_music_walker(&base_path).expect("BUG: Error building music walker");
+
     for result in walker {
         match result {
             Ok(entry) => {
                 let path = entry.path().to_path_buf();
-                if path.is_file() {
+                let parent = path.clone();
+                let parent = parent.parent();
+                if path.is_file()
+                    && (mtime_def_now(&path) > last_run_time
+                        || (parent.is_some() && mtime_def_now(parent.unwrap()) > last_run_time))
+                {
                     match track::get_track(path) {
                         Ok(mut track) => {
                             fix_track(&mut track, dry_run);
@@ -102,6 +149,16 @@ fn fix_all_tracks(base_path: &PathBuf, dry_run: bool) {
             }
             Err(err) => eprintln!("error: {}", err),
         }
+    }
+
+    if !dry_run {
+        set_last_run_time(&base_path).unwrap_or_else(|err| {
+            eprintln!(
+                "can't set last run time for {}: {:?}",
+                base_path.display(),
+                err
+            )
+        });
     }
 }
 
