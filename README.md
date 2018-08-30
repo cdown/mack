@@ -9,6 +9,7 @@ metadata itself (eg. "feat" tagging).
 - Moving featured artists from the artist tag to the title
 - Enforcing a consistent "feat" format in title tags
 - Whitespace normalisation
+- Renaming files to format "{artist}/{album}/{track} {title}"
 
 # Usage
 
