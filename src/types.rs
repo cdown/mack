@@ -14,7 +14,6 @@ pub enum MackError {
     Ignore(ignore::Error),
     Io(io::Error),
     Blacklisted,
-    InvalidUnicode,
     WouldMoveToFsRoot,
 }
 

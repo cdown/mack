@@ -24,17 +24,15 @@ fn make_relative_rename_path(track: &Track, base_path: &PathBuf) -> Result<PathB
     let extension = track
         .path
         .extension()
-        .expect("BUG: ext required in walkbuilder, but missing")
-        .to_str()
-        .ok_or(MackError::InvalidUnicode)?;
+        .expect("BUG: ext required in walkbuilder, but missing");
 
     let raw_filename = format!(
-        "{:02} {}.{}",
+        "{:02} {}.",  // the extra "." is needed for .set_extension in case we already have a "."
         tags.track().unwrap_or(0),
         tags.title().unwrap_or_else(|| "Unknown Title".to_string()),
-        extension
     );
     path.push(&sanitise_path_part(&raw_filename));
+    path.set_extension(extension);
 
     Ok(path)
 }
