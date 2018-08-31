@@ -86,6 +86,14 @@ fn rename_track(track: &types::Track, base_path: &PathBuf, dry_run: bool) {
     }
 }
 
+fn is_eligible_for_fixing(path: &PathBuf, last_run_time: SystemTime) -> bool {
+    let parent = path.clone();
+    let parent = parent.parent();
+    path.is_file()
+        && (mtime::mtime_def_now(&path) > last_run_time
+            || (parent.is_some() && mtime::mtime_def_now(parent.unwrap()) > last_run_time))
+}
+
 fn fix_all_tracks(base_path: &PathBuf, dry_run: bool) {
     let last_run_time = mtime::get_last_run_time(&base_path).unwrap_or(SystemTime::UNIX_EPOCH);
     let walker = build_music_walker(&base_path).expect("BUG: Error building music walker");
@@ -94,13 +102,7 @@ fn fix_all_tracks(base_path: &PathBuf, dry_run: bool) {
         match result {
             Ok(entry) => {
                 let path = entry.path().to_path_buf();
-                let parent = path.clone();
-                let parent = parent.parent();
-                if path.is_file()
-                    && (mtime::mtime_def_now(&path) > last_run_time
-                        || (parent.is_some()
-                            && mtime::mtime_def_now(parent.unwrap()) > last_run_time))
-                {
+                if is_eligible_for_fixing(&path, last_run_time) {
                     match track::get_track(path) {
                         Ok(mut track) => {
                             fix_track(&mut track, dry_run);
