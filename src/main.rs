@@ -41,6 +41,11 @@ fn parse_args<'a>() -> clap::ArgMatches<'a> {
                 .long("dry-run")
                 .short("n")
                 .help("Show what we would do, but don't do it"),
+        ).arg(
+            clap::Arg::with_name("force")
+                .long("force")
+                .short("f")
+                .help("Check files that appear unchanged since last run"),
         ).get_matches()
 }
 
@@ -86,15 +91,16 @@ fn rename_track(track: &types::Track, base_path: &PathBuf, dry_run: bool) {
     }
 }
 
-fn is_eligible_for_fixing(path: &PathBuf, last_run_time: SystemTime) -> bool {
+fn is_eligible_for_fixing(path: &PathBuf, last_run_time: SystemTime, force: bool) -> bool {
     let parent = path.clone();
     let parent = parent.parent();
     path.is_file()
-        && (mtime::mtime_def_now(&path) > last_run_time
+        && (force
+            || mtime::mtime_def_now(&path) > last_run_time
             || (parent.is_some() && mtime::mtime_def_now(parent.unwrap()) > last_run_time))
 }
 
-fn fix_all_tracks(base_path: &PathBuf, dry_run: bool) {
+fn fix_all_tracks(base_path: &PathBuf, dry_run: bool, force: bool) {
     let last_run_time = mtime::get_last_run_time(&base_path).unwrap_or(SystemTime::UNIX_EPOCH);
     let walker = build_music_walker(&base_path).expect("BUG: Error building music walker");
 
@@ -102,7 +108,7 @@ fn fix_all_tracks(base_path: &PathBuf, dry_run: bool) {
         match result {
             Ok(entry) => {
                 let path = entry.path().to_path_buf();
-                if is_eligible_for_fixing(&path, last_run_time) {
+                if is_eligible_for_fixing(&path, last_run_time, force) {
                     match track::get_track(path) {
                         Ok(mut track) => {
                             fix_track(&mut track, dry_run);
@@ -136,6 +142,6 @@ fn main() {
     {
         let mut path = PathBuf::new();
         path.push(raw_path);
-        fix_all_tracks(&path, args.is_present("dry_run"));
+        fix_all_tracks(&path, args.is_present("dry_run"), args.is_present("force"));
     }
 }
