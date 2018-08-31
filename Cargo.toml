@@ -10,7 +10,7 @@ license = "Public Domain"
 
 [dependencies]
 clap = "*"
-ignore = "*"
+walkdir = "*"
 lazy_static = "*"
 regex = "*"
 taglib = "*"

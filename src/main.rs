@@ -1,5 +1,5 @@
 extern crate clap;
-extern crate ignore;
+extern crate walkdir;
 #[macro_use]
 extern crate lazy_static;
 extern crate regex;
@@ -12,17 +12,13 @@ mod rename;
 mod track;
 mod types;
 
+use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::time::SystemTime;
+use walkdir::WalkDir;
 
-fn build_music_walker(dir: &PathBuf) -> Result<ignore::Walk, types::MackError> {
-    let mut mt_builder = ignore::types::TypesBuilder::new();
-    for glob in &["*.mp3", "*.flac"] {
-        mt_builder.add("music", glob)?;
-    }
-    mt_builder.select("music");
-    let music_types = mt_builder.build()?;
-    Ok(ignore::WalkBuilder::new(dir).types(music_types).build())
+lazy_static! {
+    static ref ALLOWED_EXTS: Vec<&'static OsStr> = vec![&OsStr::new("mp3"), &OsStr::new("flac")];
 }
 
 fn parse_args<'a>() -> clap::ArgMatches<'a> {
@@ -100,23 +96,21 @@ fn is_eligible_for_fixing(path: &PathBuf, last_run_time: SystemTime, force: bool
 
 fn fix_all_tracks(base_path: &PathBuf, dry_run: bool, force: bool) {
     let last_run_time = mtime::get_last_run_time(&base_path).unwrap_or(SystemTime::UNIX_EPOCH);
-    let walker = build_music_walker(&base_path).expect("BUG: Error building music walker");
+    let walker = WalkDir::new(&base_path)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .map(|e| e.path().to_path_buf())
+        .filter(|e| ALLOWED_EXTS.contains(&e.extension().unwrap_or_else(|| OsStr::new(""))));
 
-    for result in walker {
-        match result {
-            Ok(entry) => {
-                let path = entry.path().to_path_buf();
-                if is_eligible_for_fixing(&path, last_run_time, force) {
-                    match track::get_track(path) {
-                        Ok(mut track) => {
-                            fix_track(&mut track, dry_run);
-                            rename_track(&track, &base_path, dry_run);
-                        }
-                        Err(err) => eprintln!("error: {:?}", err),
-                    }
+    for path in walker {
+        if is_eligible_for_fixing(&path, last_run_time, force) {
+            match track::get_track(path) {
+                Ok(mut track) => {
+                    fix_track(&mut track, dry_run);
+                    rename_track(&track, &base_path, dry_run);
                 }
+                Err(err) => eprintln!("error: {:?}", err),
             }
-            Err(err) => eprintln!("error: {}", err),
         }
     }
 

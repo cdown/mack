@@ -1,4 +1,3 @@
-use ignore;
 use std::io;
 use std::path::PathBuf;
 use taglib::{File as TFile, FileError as TFileError};
@@ -11,7 +10,6 @@ pub struct Track {
 #[derive(Debug)]
 pub enum MackError {
     Tag(TFileError),
-    Ignore(ignore::Error),
     Io(io::Error),
     Blacklisted,
     WouldMoveToFsRoot,
@@ -27,12 +25,6 @@ pub struct TrackFeat {
 impl From<TFileError> for MackError {
     fn from(err: TFileError) -> MackError {
         MackError::Tag(err)
-    }
-}
-
-impl From<ignore::Error> for MackError {
-    fn from(err: ignore::Error) -> MackError {
-        MackError::Ignore(err)
     }
 }
 
