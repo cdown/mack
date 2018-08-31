@@ -33,9 +33,7 @@ fn parse_args<'a>() -> clap::ArgMatches<'a> {
             clap::Arg::with_name("PATH")
                 .multiple(true)
                 .default_value(".")
-                .help(
-                    "Paths to fix, directories are recursed into (default: the current directory)",
-                ),
+                .help("Paths to fix, directories are recursed into"),
         ).arg(
             clap::Arg::with_name("dry_run")
                 .long("dry-run")
