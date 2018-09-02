@@ -100,17 +100,16 @@ fn fix_all_tracks(base_path: &PathBuf, dry_run: bool, force: bool) {
         .into_iter()
         .filter_map(|e| e.ok())
         .map(|e| e.path().to_path_buf())
-        .filter(|e| ALLOWED_EXTS.contains(&e.extension().unwrap_or_else(|| OsStr::new(""))));
+        .filter(|e| ALLOWED_EXTS.contains(&e.extension().unwrap_or_else(|| OsStr::new(""))))
+        .filter(|e| is_eligible_for_fixing(&e, last_run_time, force));
 
     for path in walker {
-        if is_eligible_for_fixing(&path, last_run_time, force) {
-            match track::get_track(path) {
-                Ok(mut track) => {
-                    fix_track(&mut track, dry_run);
-                    rename_track(&track, &base_path, dry_run);
-                }
-                Err(err) => eprintln!("error: {:?}", err),
+        match track::get_track(path) {
+            Ok(mut track) => {
+                fix_track(&mut track, dry_run);
+                rename_track(&track, &base_path, dry_run);
             }
+            Err(err) => eprintln!("error: {:?}", err),
         }
     }
 
