@@ -86,8 +86,7 @@ fn rename_track(track: &types::Track, base_path: &PathBuf, dry_run: bool) {
 }
 
 fn is_eligible_for_fixing(path: &PathBuf, last_run_time: SystemTime, force: bool) -> bool {
-    let parent = path.clone();
-    let parent = parent.parent();
+    let parent = path.parent();
     path.is_file()
         && (force
             || mtime::mtime_def_now(&path) > last_run_time
