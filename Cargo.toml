@@ -9,11 +9,11 @@ keywords = ["music", "audio", "music organiser", "tagging", "mp3"]
 license = "Public Domain"
 
 [dependencies]
-clap = "*"
-walkdir = "*"
-lazy_static = "*"
-regex = "*"
-taglib = "*"
+clap = "2"
+walkdir = "2"
+lazy_static = "1"
+regex = "1"
+taglib = "1"
 
 [profile.release]
 lto = true
