@@ -163,4 +163,11 @@ mod tests {
         let expected = Some("Foo Bar (feat. Wibble Wobble and Fizz Buzz)".to_owned());
         assert_eq!(fix_title(given_title, given_artist), expected);
     }
+
+    #[test]
+    fn test_fix_whitespace() {
+        let given = "    Foo Bar [feat.    Baz    Qux   ]    ".to_owned();
+        let expected = Some("Foo Bar (feat. Baz Qux)".to_owned());
+        assert_eq!(fix_title(given, None), expected);
+    }
 }

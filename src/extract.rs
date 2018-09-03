@@ -18,8 +18,9 @@ pub fn extract_feat(title: &str) -> TrackFeat {
 
     match caps {
         Some(caps) => {
+            let trimmed = caps["feat_artists"].trim();
             let mut feat_artists: Vec<String> = FEAT_ARTIST_SPLIT
-                .split(&caps["feat_artists"])
+                .split(&trimmed)
                 .map(|x| x.to_owned())
                 .collect();
             let last_artist = feat_artists
@@ -100,6 +101,21 @@ mod tests {
     #[test]
     fn test_extract_feat_with_feat_many() {
         let given = "A plain title feat Foo Bar, Baz Qux, and Wibble Wobble".to_owned();
+        let expected = TrackFeat {
+            title: "A plain title".to_owned(),
+            featured_artists: vec![
+                "Foo Bar".to_owned(),
+                "Baz Qux".to_owned(),
+                "Wibble Wobble".to_owned(),
+            ],
+            original_title: given.clone(),
+        };
+        assert_eq!(extract_feat(&given), expected);
+    }
+
+    #[test]
+    fn test_extract_feat_with_surrounding_whitespace() {
+        let given = "A plain title feat    Foo Bar, Baz Qux, and Wibble Wobble    ".to_owned();
         let expected = TrackFeat {
             title: "A plain title".to_owned(),
             featured_artists: vec![
