@@ -149,6 +149,14 @@ mod tests {
     }
 
     #[test]
+    fn test_fix_title_with_title_feat_no_artist_feat_and_brackets() {
+        let given_title = "Foo Bar (feat. Wibble Wobble) [Richard Stallman mix]".to_owned();
+        let given_artist = "Baz Qux".to_owned();
+        let expected = Some("Foo Bar (Richard Stallman mix) (feat. Wibble Wobble)".to_owned());
+        assert_eq!(fix_title(given_title, given_artist), expected);
+    }
+
+    #[test]
     fn test_fix_title_no_title_feat_with_artist_feat() {
         let given_title = "Foo Bar".to_owned();
         let given_artist = "Baz Qux feat. Fizz Buzz".to_owned();
