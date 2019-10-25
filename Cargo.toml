@@ -1,6 +1,6 @@
 [package]
 name = "mack"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Chris Down <chris@chrisdown.name>"]
 description = "An opinionated, fast music organiser."
 homepage = "https://github.com/cdown/mack"
