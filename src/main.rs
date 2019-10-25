@@ -29,18 +29,23 @@ fn parse_args<'a>() -> clap::ArgMatches<'a> {
             clap::Arg::with_name("PATH")
                 .multiple(true)
                 .default_value(".")
-                .help("Paths to fix, directories are recursed into"),
-        ).arg(
+                .help("Paths to get files from, directories are recursed into"),
+        )
+        .arg(
             clap::Arg::with_name("dry_run")
                 .long("dry-run")
                 .short("n")
                 .help("Show what we would do, but don't do it"),
-        ).arg(
-            clap::Arg::with_name("force")
-                .long("force")
-                .short("f")
-                .help("Check files that appear unchanged since last run"),
-        ).get_matches()
+        )
+        .arg(
+            clap::Arg::with_name("output_dir")
+                .long("output-dir")
+                .short("o")
+                .value_name("DIR")
+                .takes_value(true)
+                .help("Use a different output directory (default: the same as the input dir)"),
+        )
+        .get_matches()
 }
 
 fn fix_track(track: &mut types::Track, dry_run: bool) {
@@ -71,8 +76,8 @@ fn print_updated_tags(track: &types::Track) -> () {
     }
 }
 
-fn rename_track(track: &types::Track, base_path: &PathBuf, dry_run: bool) {
-    let new_path = rename::rename_track(&track, &base_path, dry_run);
+fn rename_track(track: &types::Track, output_path: &PathBuf, dry_run: bool) {
+    let new_path = rename::rename_track(&track, &output_path, dry_run);
 
     match new_path {
         Ok(Some(new_path)) => println!(
@@ -93,8 +98,16 @@ fn is_eligible_for_fixing(path: &PathBuf, last_run_time: SystemTime, force: bool
             || (parent.is_some() && mtime::mtime_def_now(parent.unwrap()) > last_run_time))
 }
 
-fn fix_all_tracks(base_path: &PathBuf, dry_run: bool, force: bool) {
-    let last_run_time = mtime::get_last_run_time(&base_path).unwrap_or(SystemTime::UNIX_EPOCH);
+fn fix_all_tracks(base_path: &PathBuf, output_path: &PathBuf, dry_run: bool, force: bool) {
+    let last_run_time;
+
+    // If the output path is different, we don't know if we should run or not, so just do them all
+    if output_path == base_path {
+        last_run_time = mtime::get_last_run_time(&base_path).unwrap_or(SystemTime::UNIX_EPOCH);
+    } else {
+        last_run_time = SystemTime::UNIX_EPOCH;
+    }
+
     let walker = WalkDir::new(&base_path)
         .into_iter()
         .filter_map(|e| e.ok())
@@ -106,13 +119,13 @@ fn fix_all_tracks(base_path: &PathBuf, dry_run: bool, force: bool) {
         match track::get_track(path) {
             Ok(mut track) => {
                 fix_track(&mut track, dry_run);
-                rename_track(&track, &base_path, dry_run);
+                rename_track(&track, &output_path, dry_run);
             }
             Err(err) => eprintln!("error: {:?}", err),
         }
     }
 
-    if !dry_run {
+    if !dry_run && output_path == base_path {
         mtime::set_last_run_time(&base_path).unwrap_or_else(|err| {
             eprintln!(
                 "can't set last run time for {}: {:?}",
@@ -125,13 +138,37 @@ fn fix_all_tracks(base_path: &PathBuf, dry_run: bool, force: bool) {
 
 fn main() {
     let args = parse_args();
+    let mut output_path = None;
+
+    if args.is_present("output_dir") {
+        let mut inner = PathBuf::new();
+        inner.push(
+            args.value_of("output_dir")
+                .expect("BUG: where did output_dir arg go?"),
+        );
+        output_path = Some(inner);
+    }
+
     for raw_path in args
         .values_of("PATH")
         .expect("BUG: missing default path")
         .collect::<Vec<&str>>()
     {
+        let this_output_path;
         let mut path = PathBuf::new();
         path.push(raw_path);
-        fix_all_tracks(&path, args.is_present("dry_run"), args.is_present("force"));
+
+        if let Some(op) = output_path.clone() {
+            this_output_path = op;
+        } else {
+            this_output_path = path.clone();
+        }
+
+        fix_all_tracks(
+            &path,
+            &this_output_path,
+            args.is_present("dry_run"),
+            args.is_present("force"),
+        );
     }
 }

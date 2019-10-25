@@ -8,9 +8,9 @@ fn sanitise_path_part(path_part: &str) -> String {
 }
 
 /// artist/album/2digitnum title.ext
-fn make_relative_rename_path(track: &Track, base_path: &PathBuf) -> Result<PathBuf, MackError> {
+fn make_relative_rename_path(track: &Track, output_path: &PathBuf) -> Result<PathBuf, MackError> {
     let tags = track.tag_file.tag()?;
-    let mut path = base_path.clone();
+    let mut path = output_path.clone();
 
     path.push(&sanitise_path_part(
         &tags
@@ -45,10 +45,10 @@ fn rename_creating_dirs(from: &PathBuf, to: &PathBuf) -> Result<(), MackError> {
 
 pub fn rename_track(
     track: &Track,
-    base_path: &PathBuf,
+    output_path: &PathBuf,
     dry_run: bool,
 ) -> Result<Option<PathBuf>, MackError> {
-    let new_path = make_relative_rename_path(&track, &base_path)?;
+    let new_path = make_relative_rename_path(&track, &output_path)?;
 
     if new_path == track.path {
         return Ok(None);
