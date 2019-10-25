@@ -39,7 +39,18 @@ fn make_relative_rename_path(track: &Track, output_path: &PathBuf) -> Result<Pat
 
 fn rename_creating_dirs(from: &PathBuf, to: &PathBuf) -> Result<(), MackError> {
     fs::create_dir_all(&to.parent().ok_or(MackError::WouldMoveToFsRoot)?)?;
-    fs::rename(&from, &to)?;
+
+    // Trying to rename cross device? Just copy and unlink the old one
+    if let Err(err) = fs::rename(&from, &to) {
+        if let Some(os_err) = err.raw_os_error() {
+            if os_err == libc::EXDEV {
+                fs::copy(&from, &to)?;
+                fs::remove_file(&from)?;
+            } else {
+                Err(err)?;
+            }
+        }
+    }
     Ok(())
 }
 
