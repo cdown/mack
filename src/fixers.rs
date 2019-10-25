@@ -80,7 +80,7 @@ fn make_title(title: &TrackFeat, artist: &TrackFeat) -> String {
     }
 
     new_title = new_title.trim().to_owned();
-    new_title.replace("[", "(").replace("]", ")")
+    new_title.replace("[", "(").replace("]", ")").replace("…", "...")
 }
 
 fn make_feat_string(featured_artists: &[String]) -> String {
