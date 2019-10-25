@@ -13,17 +13,7 @@ fn make_lastmack_path(base_path: &PathBuf) -> PathBuf {
 
 pub fn get_last_run_time(base_path: &PathBuf) -> Option<SystemTime> {
     let last_run_path = make_lastmack_path(&base_path);
-    match get_mtime(&last_run_path) {
-        Ok(mtime) => Some(mtime),
-        Err(err) => {
-            eprintln!(
-                "can't get time from {}, checking all: {:?}",
-                last_run_path.display(),
-                err
-            );
-            None
-        }
-    }
+    get_mtime(&last_run_path).ok()
 }
 
 fn get_mtime<T: AsRef<Path>>(path: T) -> Result<SystemTime, types::MackError> {
