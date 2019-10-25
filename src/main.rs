@@ -38,6 +38,12 @@ fn parse_args<'a>() -> clap::ArgMatches<'a> {
                 .help("Show what we would do, but don't do it"),
         )
         .arg(
+            clap::Arg::with_name("force")
+                .long("force")
+                .short("f")
+                .help("Ignore .lastmack timestamp, run on all files present regardless"),
+        )
+        .arg(
             clap::Arg::with_name("output_dir")
                 .long("output-dir")
                 .short("o")
