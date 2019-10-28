@@ -1,3 +1,4 @@
+#[macro_use]
 extern crate clap;
 extern crate walkdir;
 #[macro_use]
@@ -24,7 +25,7 @@ lazy_static! {
 
 fn parse_args<'a>() -> clap::ArgMatches<'a> {
     clap::App::new("mack")
-        .version("0.2.2")
+        .version(crate_version!())
         .about("The opinionated music library organiser.")
         .arg(
             clap::Arg::with_name("PATH")
