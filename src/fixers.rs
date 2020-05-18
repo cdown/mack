@@ -84,6 +84,10 @@ fn make_title(title: &TrackFeat, artist: &TrackFeat) -> String {
         .replace("[", "(")
         .replace("]", ")")
         .replace("…", "...")
+        .replace("“", "\"")
+        .replace("”", "\"")
+        .replace("‘", "'")
+        .replace("’", "'")
 }
 
 fn make_feat_string(featured_artists: &[String]) -> String {
@@ -172,6 +176,14 @@ mod tests {
         let given_title = "Foo Bar (feat. Wibble Wobble)".to_owned();
         let given_artist = "Baz Qux feat. Fizz Buzz".to_owned();
         let expected = Some("Foo Bar (feat. Wibble Wobble and Fizz Buzz)".to_owned());
+        assert_eq!(fix_title(given_title, given_artist), expected);
+    }
+
+    #[test]
+    fn test_fix_title_with_title_feat_smart_quotes() {
+        let given_title = "Foo ‘Bar’ (feat. Wibble “Wabble” Wobble)".to_owned();
+        let given_artist = "Baz Qux".to_owned();
+        let expected = Some("Foo 'Bar' (feat. Wibble \"Wabble\" Wobble)".to_owned());
         assert_eq!(fix_title(given_title, given_artist), expected);
     }
 
