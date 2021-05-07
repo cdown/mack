@@ -5,7 +5,7 @@ const AMP_SPLITS: &[&str] = &[" & ", " and "];
 
 lazy_static! {
     static ref FEAT_RE: Regex =
-        RegexBuilder::new(r#" [(\[]?f(ea)?t[a-z]*\.? (?P<feat_artists>[^)\]]+)[)\]]?"#)
+        RegexBuilder::new(r#" [(\[]?(f(ea)?t[a-z]*\.?|f\.) (?P<feat_artists>[^)\]]+)[)\]]?"#)
             .case_insensitive(true)
             .build()
             .expect("BUG: Invalid regex");
@@ -90,6 +90,17 @@ mod tests {
     #[test]
     fn test_extract_feat_with_feat_double() {
         let given = "A plain title Ft. Foo Bar and Baz Qux".to_owned();
+        let expected = TrackFeat {
+            title: "A plain title".to_owned(),
+            featured_artists: vec!["Foo Bar".to_owned(), "Baz Qux".to_owned()],
+            original_title: given.clone(),
+        };
+        assert_eq!(extract_feat(&given), expected);
+    }
+
+    #[test]
+    fn test_extract_feat_with_feat_as_f() {
+        let given = "A plain title f. Foo Bar and Baz Qux".to_owned();
         let expected = TrackFeat {
             title: "A plain title".to_owned(),
             featured_artists: vec!["Foo Bar".to_owned(), "Baz Qux".to_owned()],
