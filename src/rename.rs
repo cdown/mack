@@ -2,9 +2,16 @@ use std::fs;
 use std::path::PathBuf;
 use types::{MackError, Track};
 
+// Arbitrary limit on path part without extension to try to avoid brushing against PATH_MAX. We
+// can't just check PATH_MAX and similar, because we also want to avoid issues when copying
+// elsewhere later.
+const MAX_PATH_PART_LEN: usize = 64;
+
 /// TODO: Currently only filters out names guaranteed to be incompatible with POSIX filesystems
 fn sanitise_path_part(path_part: &str) -> String {
-    path_part.replace("\0", "").replace("/", "_")
+    let mut out = path_part.replace("\0", "").replace("/", "_");
+    out.truncate(MAX_PATH_PART_LEN);
+    out
 }
 
 /// artist/album/2digitnum title.ext
