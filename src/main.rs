@@ -20,7 +20,8 @@ use std::time::SystemTime;
 use walkdir::WalkDir;
 
 lazy_static! {
-    static ref ALLOWED_EXTS: Vec<&'static OsStr> = vec![&OsStr::new("mp3"), &OsStr::new("flac")];
+    static ref ALLOWED_EXTS: Vec<&'static OsStr> =
+        vec![&OsStr::new("mp3"), &OsStr::new("flac"), &OsStr::new("m4a")];
 }
 
 fn parse_args<'a>() -> clap::ArgMatches<'a> {
