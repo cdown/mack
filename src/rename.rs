@@ -7,9 +7,22 @@ use types::{MackError, Track};
 // elsewhere later.
 const MAX_PATH_PART_LEN: usize = 64;
 
-/// TODO: Currently only filters out names guaranteed to be incompatible with POSIX filesystems
+const ADDITIONAL_ACCEPTED_CHARS: &'static [char] = &['.', '-', '(', ')', ','];
+
 fn sanitise_path_part(path_part: &str) -> String {
-    let mut out = path_part.replace("\0", "").replace("/", "_");
+    let mut out: String = path_part
+        .chars()
+        .map(|c| {
+            if c.is_alphanumeric()
+                || c.is_whitespace()
+                || ADDITIONAL_ACCEPTED_CHARS.iter().any(|&a| a == c)
+            {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect();
     out.truncate(MAX_PATH_PART_LEN);
     out
 }
