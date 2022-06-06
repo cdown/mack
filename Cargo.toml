@@ -13,7 +13,6 @@ clap = "2"
 walkdir = "2"
 lazy_static = "1"
 regex = "1"
-taglib = "1"
 libc = "0.2"
 
 [profile.release]

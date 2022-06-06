@@ -5,12 +5,15 @@ extern crate walkdir;
 extern crate lazy_static;
 extern crate libc;
 extern crate regex;
-extern crate taglib;
+extern crate id3;
 
 mod extract;
 mod fixers;
 mod mtime;
 mod rename;
+#[allow(dead_code)]
+#[allow(unused_variables)]
+mod taglib;
 mod track;
 mod types;
 
