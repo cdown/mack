@@ -3,9 +3,9 @@ extern crate clap;
 extern crate walkdir;
 #[macro_use]
 extern crate lazy_static;
+extern crate id3;
 extern crate libc;
 extern crate regex;
-extern crate id3;
 
 mod extract;
 mod fixers;
