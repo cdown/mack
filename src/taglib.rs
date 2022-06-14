@@ -83,11 +83,13 @@ impl Tag {
 	/// Returns the track comment, or an empty string if no track comment is
 	/// present.
 	pub fn comment(&self) -> Option<String> {
-		None // TODO: Look into joining the comments iterator
+		if let Some(frame) = self.tag.get("COMM") {
+			if let Some(comment) = frame.content().comment() {
+				return Some(comment.text.clone());
+			}
+		}
+		None
 	}
-
-	/// Sets the track comment.
-	pub fn set_comment(&mut self, comment: &str) {} // TODO
 
 	/// Returns the track number, or 0 if no track number is present.
 	pub fn track(&self) -> Option<u32> {
