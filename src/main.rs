@@ -3,14 +3,17 @@ extern crate clap;
 extern crate walkdir;
 #[macro_use]
 extern crate lazy_static;
+extern crate id3;
 extern crate libc;
 extern crate regex;
-extern crate taglib;
 
 mod extract;
 mod fixers;
 mod mtime;
 mod rename;
+#[allow(dead_code)]
+#[allow(unused_variables)]
+mod taglib;
 mod track;
 mod types;
 
