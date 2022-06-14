@@ -11,8 +11,6 @@ mod extract;
 mod fixers;
 mod mtime;
 mod rename;
-#[allow(dead_code)]
-#[allow(unused_variables)]
 mod taglib;
 mod track;
 mod types;

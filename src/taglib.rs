@@ -30,14 +30,8 @@ impl File {
 
 #[derive(Debug)]
 pub enum FileError {
-    /// The file is an invalid or an unrecognized audio container
-    InvalidFile,
-    /// The file name is invalid
-    InvalidFileName,
     /// No meta-data is available
     NoAvailableTag,
-    /// No audio properties are available
-    NoAvailableAudioProperties,
 }
 
 /// The abstract meta-data container for audio files
@@ -75,11 +69,6 @@ impl Tag {
         self.tag.album().and_then(|x| Some(x.to_string()))
     }
 
-    /// Sets the album name.
-    pub fn set_album(&mut self, album: &str) {
-        self.tag.set_album(album)
-    }
-
     /// Returns `Some(TRACK COMMENT)` or `None` if no track comment is present.
     pub fn comment(&self) -> Option<String> {
         if let Some(frame) = self.tag.get("COMM") {
@@ -93,10 +82,5 @@ impl Tag {
     /// Returns `Some(TRACK NUMBER)` or `None` if track number is present.
     pub fn track(&self) -> Option<u32> {
         self.tag.track()
-    }
-
-    /// Sets the track number.
-    pub fn set_track(&mut self, track: u32) {
-        self.tag.set_track(track)
     }
 }
