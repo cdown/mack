@@ -9,7 +9,7 @@ keywords = ["music", "audio", "organiser", "tagging", "mp3"]
 license = "Unlicense"
 
 [dependencies]
-clap = "2"
+clap = { version = "3", features = ["cargo"] }
 walkdir = "2"
 lazy_static = "1"
 regex = "1"

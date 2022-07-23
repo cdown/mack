@@ -24,7 +24,7 @@ lazy_static! {
         vec![&OsStr::new("mp3"), &OsStr::new("flac"), &OsStr::new("m4a")];
 }
 
-fn parse_args<'a>() -> clap::ArgMatches<'a> {
+fn parse_args() -> clap::ArgMatches {
     clap::App::new("mack")
         .version(crate_version!())
         .about("The opinionated music library organiser.")
@@ -37,19 +37,19 @@ fn parse_args<'a>() -> clap::ArgMatches<'a> {
         .arg(
             clap::Arg::with_name("dry_run")
                 .long("dry-run")
-                .short("n")
+                .short('n')
                 .help("Show what we would do, but don't do it"),
         )
         .arg(
             clap::Arg::with_name("force")
                 .long("force")
-                .short("f")
+                .short('f')
                 .help("Ignore .lastmack timestamp, run on all files present regardless"),
         )
         .arg(
             clap::Arg::with_name("output_dir")
                 .long("output-dir")
-                .short("o")
+                .short('o')
                 .value_name("DIR")
                 .takes_value(true)
                 .help("Use a different output directory (default: the same as the input dir)"),
