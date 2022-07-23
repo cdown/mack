@@ -14,6 +14,7 @@ pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool, MackError> {
 
     let new_title = fix_title(tags.title(), tags.artist());
     let new_artist = fix_artist(tags.artist());
+    let new_album = fix_album(tags.album());
     let mut changed = false;
 
     if let Some(new_artist) = new_artist {
@@ -24,6 +25,10 @@ pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool, MackError> {
         changed = true;
         tags.set_title(&new_title);
     }
+    if let Some(new_album) = new_album {
+        changed = true;
+        tags.set_album(&new_album);
+    }
 
     if !dry_run && changed {
         track.tag_file.save();
@@ -32,10 +37,45 @@ pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool, MackError> {
     Ok(changed)
 }
 
+fn normalise_field(field: &str) -> String {
+    let mut new_field = field.to_owned();
+
+    // Optimisation: Most titles don't have multiple whitespaces. Don't even try to replace with
+    // MULTI_WS_RE if we can't find two spaces together.
+    if new_field.contains("  ") {
+        new_field = MULTI_WS_RE.replace_all(&new_field, " ").to_string()
+    }
+
+    new_field = new_field.trim().to_owned();
+    new_field
+        .replace("[", "(")
+        .replace("]", ")")
+        .replace("…", "...")
+        .replace("“", "\"")
+        .replace("”", "\"")
+        .replace("‘", "'")
+        .replace("’", "'")
+}
+
 fn fix_artist(old_artist: impl Into<Option<String>>) -> Option<String> {
-    let artist = extract_feat(&old_artist.into().unwrap_or_default());
+    let field = normalise_field(&old_artist.into().unwrap_or_default());
+    let artist = extract_feat(&field);
     if artist.title != artist.original_title {
         Some(artist.title)
+    } else {
+        None
+    }
+}
+
+fn fix_album(old_album: impl Into<Option<String>>) -> Option<String> {
+    let old_album = match old_album.into() {
+        Some(old_album) => old_album,
+        None => return None,
+    };
+    let new_album = normalise_field(&old_album);
+
+    if new_album != old_album {
+        Some(new_album)
     } else {
         None
     }
@@ -73,21 +113,7 @@ fn make_title(title: &TrackFeat, artist: &TrackFeat) -> String {
         new_title.push_str(&feat_string);
     }
 
-    // Optimisation: Most titles don't have multiple whitespaces. Don't even try to replace with
-    // MULTI_WS_RE if we can't find two spaces together.
-    if new_title.contains("  ") {
-        new_title = MULTI_WS_RE.replace_all(&new_title, " ").to_string()
-    }
-
-    new_title = new_title.trim().to_owned();
-    new_title
-        .replace("[", "(")
-        .replace("]", ")")
-        .replace("…", "...")
-        .replace("“", "\"")
-        .replace("”", "\"")
-        .replace("‘", "'")
-        .replace("’", "'")
+    normalise_field(&new_title)
 }
 
 fn make_feat_string(featured_artists: &[String]) -> String {
