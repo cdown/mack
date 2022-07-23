@@ -72,9 +72,10 @@ fn fix_track(track: &mut types::Track, dry_run: bool) {
 fn print_updated_tags(track: &types::Track) -> () {
     match track.tag_file.tag() {
         Ok(tags) => println!(
-            "{}: updated tags: artist: '{}', title: '{}'",
+            "{}: updated tags: artist: '{}', album: '{}', title: '{}'",
             track.path.display(),
             tags.artist().unwrap_or_default(),
+            tags.album().unwrap_or_default(),
             tags.title().unwrap_or_default()
         ),
         Err(err) => eprintln!(
