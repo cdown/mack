@@ -1,43 +1,41 @@
-[![Tests](https://img.shields.io/travis/cdown/mack/master.svg)](https://travis-ci.org/cdown/mack)
+# mack | [![Tests](https://img.shields.io/github/actions/workflow/status/cdown/mack/ci.yml?branch=master)](https://github.com/cdown/mack/actions?query=branch%3Amaster)
 
 mack is to music files as [black][black] is to code formatting. It enforces
 standards around both consistency of the metadata (eg. ID3 version) and the
 metadata itself (eg. "feat" tagging).
 
-# Examples of fixes
+## Examples of fixes
 
 - Moving featured artists from the artist tag to the title
 - Enforcing a consistent "feat" format in title tags
 - Whitespace normalisation
 - Renaming files to format "{artist}/{album}/{track} {title}"
 
-# Usage
+## Usage
 
-    mack [DIR]
+See `--help`. An example invocation is:
 
-You can also see what would be changed first using `--dry-run`.
+    % mack --dry-run -o Music .
+    01 Pyramid.mp3: renamed to Music/宇宙コンビニ/染まる音を確認したら/01 Pyramid.mp3
+    02 8films.mp3: renamed to Music/宇宙コンビニ/染まる音を確認したら/02 8films.mp3
+    03 tobira.mp3: renamed to Music/宇宙コンビニ/染まる音を確認したら/03 tobira.mp3
+    04 Compass.mp3: renamed to Music/宇宙コンビニ/染まる音を確認したら/04 Compass.mp3
+    05 strings.mp3: renamed to Music/宇宙コンビニ/染まる音を確認したら/05 strings.mp3
 
-# Building
+You can see what would be changed first using `--dry-run`.
 
-You need [TagLib](http://taglib.org/) installed on your system to build. This
-can be found in the following packages:
+## Installation
 
-- Arch Linux: [taglib](https://www.archlinux.org/packages/extra/x86_64/taglib/)
-- CentOS/Fedora: taglib
-- Gentoo: [media-libs/taglib](https://packages.gentoo.org/packages/media-libs/taglib)
-- Ubuntu/Debian: [libtagc0-dev](https://packages.debian.org/search?searchon=names&keywords=libtagc0-dev)
+    cargo install mack
 
-
-After that, `cargo build` as normal.
-
-# Performance
+## Performance
 
 mack has a strong focus on performance. Files which were not updated since the
 last mack run will not be examined at all. On a sample modern laptop with a
 mid-spec SSD, this means that we only take 0.02 seconds to run over 5000 files
 under most circumstances (0.2 seconds on the very first run).
 
-# Configuration
+## Configuration
 
 In a similar philosophy to [black][black], most things cannot be configured --
 you either use mack or you don't. There is one thing you can control though: if
