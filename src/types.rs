@@ -6,7 +6,7 @@ pub struct Track {
     pub tag_file: TFile,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct TrackFeat {
     pub title: String,
     pub featured_artists: Vec<String>,
