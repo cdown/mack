@@ -139,16 +139,17 @@ fn fix_all_tracks(base_path: &PathBuf, output_path: &Path, dry_run: bool, force:
 
 fn main() {
     let args = parse_args();
-    let mut output_path = None;
 
-    if args.is_present("output_dir") {
+    let output_path = if args.is_present("output_dir") {
         let mut inner = PathBuf::new();
         inner.push(
             args.value_of("output_dir")
                 .expect("BUG: where did output_dir arg go?"),
         );
-        output_path = Some(inner);
-    }
+        Some(inner)
+    } else {
+        None
+    };
 
     for raw_path in args
         .values_of("PATH")
