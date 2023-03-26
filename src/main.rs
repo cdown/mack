@@ -132,7 +132,7 @@ fn fix_all_tracks(base_path: &PathBuf, output_path: &Path, dry_run: bool, force:
                 "can't set last run time for {}: {:?}",
                 base_path.display(),
                 err
-            )
+            );
         });
     }
 }

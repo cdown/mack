@@ -48,7 +48,7 @@ fn normalise_field(field: &str) -> String {
     // Optimisation: Most titles don't have multiple whitespaces. Don't even try to replace with
     // MULTI_WS_RE if we can't find two spaces together.
     if new_field.contains("  ") {
-        new_field = MULTI_WS_RE.replace_all(&new_field, " ").to_string()
+        new_field = MULTI_WS_RE.replace_all(&new_field, " ").to_string();
     }
 
     new_field = new_field.trim().to_owned();
