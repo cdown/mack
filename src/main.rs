@@ -122,7 +122,7 @@ fn fix_all_tracks(base_path: &PathBuf, output_path: &Path, dry_run: bool, force:
                 fix_track(&mut track, dry_run);
                 rename_track(&track, output_path, dry_run);
             }
-            Err(err) => eprintln!("error: {:?}", err),
+            Err(err) => eprintln!("error: {err:?}"),
         }
     }
 

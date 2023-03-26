@@ -112,7 +112,7 @@ fn make_title(title: &TrackFeat, artist: &TrackFeat) -> String {
     let mut new_title = title.title.clone();
     if !featured_artists.is_empty() {
         let feat_artists_string = make_feat_string(&featured_artists);
-        let feat_string = format!(" (feat. {})", feat_artists_string);
+        let feat_string = format!(" (feat. {feat_artists_string})");
         new_title.push_str(&feat_string);
     }
 
