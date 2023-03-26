@@ -145,9 +145,8 @@ fn make_feat_string(featured_artists: &[String]) -> String {
 fn fixer_is_blacklisted(tags: &Tag) -> Result<()> {
     if tags.comment().unwrap_or_default().contains("_NO_MACK") {
         bail!("File contains _NO_MACK");
-    } else {
-        Ok(())
     }
+    Ok(())
 }
 
 #[cfg(test)]
