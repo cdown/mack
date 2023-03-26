@@ -6,6 +6,7 @@ mod track;
 mod types;
 
 use clap::crate_version;
+use id3::TagLike;
 use lazy_static::lazy_static;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
@@ -63,20 +64,13 @@ fn fix_track(track: &mut types::Track, dry_run: bool) {
 }
 
 fn print_updated_tags(track: &types::Track) {
-    match track.tag_file.tag() {
-        Ok(tags) => println!(
-            "{}: updated tags: artist: '{}', album: '{}', title: '{}'",
-            track.path.display(),
-            tags.artist().unwrap_or_default(),
-            tags.album().unwrap_or_default(),
-            tags.title().unwrap_or_default()
-        ),
-        Err(err) => eprintln!(
-            "error getting tag info: {}: {:?}",
-            track.path.display(),
-            err
-        ),
-    }
+    println!(
+        "{}: updated tags: artist: '{}', album: '{}', title: '{}'",
+        track.path.display(),
+        track.tag.artist().unwrap_or_default(),
+        track.tag.album().unwrap_or_default(),
+        track.tag.title().unwrap_or_default()
+    );
 }
 
 fn rename_track(track: &types::Track, output_path: &Path, dry_run: bool) {

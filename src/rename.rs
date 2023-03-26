@@ -1,5 +1,6 @@
 use crate::types::Track;
 use anyhow::{Context, Result};
+use id3::TagLike;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -29,21 +30,14 @@ fn sanitise_path_part(path_part: &str) -> String {
 }
 
 /// artist/album/2digitnum title.ext
-fn make_relative_rename_path(track: &Track, output_path: &Path) -> Result<PathBuf> {
-    let tags = track
-        .tag_file
-        .tag()
-        .map_err(|_| anyhow::Error::msg("Failed to get tag"))?;
+fn make_relative_rename_path(track: &Track, output_path: &Path) -> PathBuf {
+    let tags = &track.tag;
     let mut path = output_path.to_path_buf();
 
     path.push(&sanitise_path_part(
-        &tags
-            .artist()
-            .unwrap_or_else(|| "Unknown Artist".to_string()),
+        tags.artist().unwrap_or("Unknown Artist"),
     ));
-    path.push(&sanitise_path_part(
-        &tags.album().unwrap_or_else(|| "Unknown Album".to_string()),
-    ));
+    path.push(&sanitise_path_part(tags.album().unwrap_or("Unknown Album")));
 
     let extension = track
         .path
@@ -53,12 +47,11 @@ fn make_relative_rename_path(track: &Track, output_path: &Path) -> Result<PathBu
     let raw_filename = format!(
         "{:02} {}.", // the extra "." is needed for .set_extension in case we already have a "."
         tags.track().unwrap_or(0),
-        tags.title().unwrap_or_else(|| "Unknown Title".to_string()),
+        tags.title().unwrap_or("Unknown Title"),
     );
     path.push(&sanitise_path_part(&raw_filename));
     path.set_extension(extension);
-
-    Ok(path)
+    path
 }
 
 fn rename_creating_dirs(from: &PathBuf, to: &PathBuf) -> Result<()> {
@@ -79,7 +72,7 @@ fn rename_creating_dirs(from: &PathBuf, to: &PathBuf) -> Result<()> {
 }
 
 pub fn rename_track(track: &Track, output_path: &Path, dry_run: bool) -> Result<Option<PathBuf>> {
-    let new_path = make_relative_rename_path(track, output_path)?;
+    let new_path = make_relative_rename_path(track, output_path);
 
     if new_path == track.path {
         return Ok(None);

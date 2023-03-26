@@ -1,9 +1,9 @@
+use id3::Tag;
 use std::path::PathBuf;
-use taglib::File as TFile;
 
 pub struct Track {
     pub path: PathBuf,
-    pub tag_file: TFile,
+    pub tag: Tag,
 }
 
 #[derive(Debug, PartialEq, Eq)]

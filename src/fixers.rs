@@ -1,21 +1,18 @@
 use crate::extract::extract_feat;
 use crate::types::{Track, TrackFeat};
 use anyhow::{bail, Result};
+use id3::{Tag, TagLike, Version};
 use lazy_static::lazy_static;
 use regex::Regex;
-use taglib::Tag;
 
 lazy_static! {
     static ref MULTI_WS_RE: Regex = Regex::new(r#"[ \t]+"#).expect("BUG: Invalid regex");
 }
 
 pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool> {
-    let mut tags = track
-        .tag_file
-        .tag()
-        .map_err(|_| anyhow::Error::msg("Failed to get tag"))?;
+    let tags = &mut track.tag;
 
-    fixer_is_blacklisted(&tags)?;
+    fixer_is_blacklisted(tags)?;
 
     let new_title = fix_title(tags.title(), tags.artist());
     let new_artist = fix_artist(tags.artist());
@@ -36,7 +33,7 @@ pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool> {
     }
 
     if !dry_run && changed {
-        track.tag_file.save();
+        tags.write_to_path(&track.path, Version::Id3v24)?;
     }
 
     Ok(changed)
@@ -60,8 +57,8 @@ fn normalise_field(field: &str) -> String {
         .replace(['‘', '’'], "'")
 }
 
-fn fix_artist(old_artist: impl Into<Option<String>>) -> Option<String> {
-    let field = normalise_field(&old_artist.into().unwrap_or_default());
+fn fix_artist(old_artist: Option<&str>) -> Option<String> {
+    let field = normalise_field(old_artist.unwrap_or_default());
     let artist = extract_feat(&field);
     if artist.title == artist.original_title {
         None
@@ -70,9 +67,9 @@ fn fix_artist(old_artist: impl Into<Option<String>>) -> Option<String> {
     }
 }
 
-fn fix_album(old_album: impl Into<Option<String>>) -> Option<String> {
-    let Some(old_album) = old_album.into() else { return None };
-    let new_album = normalise_field(&old_album);
+fn fix_album(old_album: Option<&str>) -> Option<String> {
+    let Some(old_album) = old_album else { return None };
+    let new_album = normalise_field(old_album);
 
     if new_album == old_album {
         None
@@ -81,13 +78,10 @@ fn fix_album(old_album: impl Into<Option<String>>) -> Option<String> {
     }
 }
 
-fn fix_title(
-    old_title: impl Into<Option<String>>,
-    old_artist: impl Into<Option<String>>,
-) -> Option<String> {
-    let Some(old_title) = old_title.into() else { return None };
-    let old_title = extract_feat(&old_title);
-    let old_artist = extract_feat(&old_artist.into().unwrap_or_default());
+fn fix_title(old_title: Option<&str>, old_artist: Option<&str>) -> Option<String> {
+    let Some(old_title) = old_title else { return None };
+    let old_title = extract_feat(old_title);
+    let old_artist = extract_feat(old_artist.unwrap_or_default());
     let new_title = make_title(&old_title, &old_artist);
 
     if new_title == old_title.original_title {
@@ -135,8 +129,10 @@ fn make_feat_string(featured_artists: &[String]) -> String {
 }
 
 fn fixer_is_blacklisted(tags: &Tag) -> Result<()> {
-    if tags.comment().unwrap_or_default().contains("_NO_MACK") {
-        bail!("File contains _NO_MACK");
+    for comment in tags.comments() {
+        if comment.text.contains("_NO_MACK") {
+            bail!("Comment contains _NO_MACK");
+        }
     }
     Ok(())
 }
@@ -147,70 +143,70 @@ mod tests {
 
     #[test]
     fn test_fix_artist_no_feat() {
-        let given = "Foo Bar".to_owned();
+        let given = "Foo Bar";
         let expected = None;
-        assert_eq!(fix_artist(given), expected);
+        assert_eq!(fix_artist(Some(given)), expected);
     }
 
     #[test]
     fn test_fix_artist_with_feat() {
-        let given = "Foo Bar (feat. Baz Qux)".to_owned();
+        let given = "Foo Bar (feat. Baz Qux)";
         let expected = Some("Foo Bar".to_owned());
-        assert_eq!(fix_artist(given), expected);
+        assert_eq!(fix_artist(Some(given)), expected);
     }
 
     #[test]
     fn test_fix_title_no_title_feat_no_artist_feat() {
-        let given_title = "Foo Bar".to_owned();
-        let given_artist = "Baz Qux".to_owned();
+        let given_title = "Foo Bar";
+        let given_artist = "Baz Qux";
         let expected = None;
-        assert_eq!(fix_title(given_title, given_artist), expected);
+        assert_eq!(fix_title(Some(given_title), Some(given_artist)), expected);
     }
 
     #[test]
     fn test_fix_title_with_title_feat_no_artist_feat() {
-        let given_title = "Foo Bar (feat. Wibble Wobble)".to_owned();
-        let given_artist = "Baz Qux".to_owned();
+        let given_title = "Foo Bar (feat. Wibble Wobble)";
+        let given_artist = "Baz Qux";
         let expected = None;
-        assert_eq!(fix_title(given_title, given_artist), expected);
+        assert_eq!(fix_title(Some(given_title), Some(given_artist)), expected);
     }
 
     #[test]
     fn test_fix_title_with_title_feat_no_artist_feat_and_brackets() {
-        let given_title = "Foo Bar (feat. Wibble Wobble) [Richard Stallman mix]".to_owned();
-        let given_artist = "Baz Qux".to_owned();
+        let given_title = "Foo Bar (feat. Wibble Wobble) [Richard Stallman mix]";
+        let given_artist = "Baz Qux";
         let expected = Some("Foo Bar (Richard Stallman mix) (feat. Wibble Wobble)".to_owned());
-        assert_eq!(fix_title(given_title, given_artist), expected);
+        assert_eq!(fix_title(Some(given_title), Some(given_artist)), expected);
     }
 
     #[test]
     fn test_fix_title_no_title_feat_with_artist_feat() {
-        let given_title = "Foo Bar".to_owned();
-        let given_artist = "Baz Qux feat. Fizz Buzz".to_owned();
+        let given_title = "Foo Bar";
+        let given_artist = "Baz Qux feat. Fizz Buzz";
         let expected = Some("Foo Bar (feat. Fizz Buzz)".to_owned());
-        assert_eq!(fix_title(given_title, given_artist), expected);
+        assert_eq!(fix_title(Some(given_title), Some(given_artist)), expected);
     }
 
     #[test]
     fn test_fix_title_with_title_feat_and_artist_feat() {
-        let given_title = "Foo Bar (feat. Wibble Wobble)".to_owned();
-        let given_artist = "Baz Qux feat. Fizz Buzz".to_owned();
+        let given_title = "Foo Bar (feat. Wibble Wobble)";
+        let given_artist = "Baz Qux feat. Fizz Buzz";
         let expected = Some("Foo Bar (feat. Wibble Wobble and Fizz Buzz)".to_owned());
-        assert_eq!(fix_title(given_title, given_artist), expected);
+        assert_eq!(fix_title(Some(given_title), Some(given_artist)), expected);
     }
 
     #[test]
     fn test_fix_title_with_title_feat_smart_quotes() {
-        let given_title = "Foo ‘Bar’ (feat. Wibble “Wabble” Wobble)".to_owned();
-        let given_artist = "Baz Qux".to_owned();
+        let given_title = "Foo ‘Bar’ (feat. Wibble “Wabble” Wobble)";
+        let given_artist = "Baz Qux";
         let expected = Some("Foo 'Bar' (feat. Wibble \"Wabble\" Wobble)".to_owned());
-        assert_eq!(fix_title(given_title, given_artist), expected);
+        assert_eq!(fix_title(Some(given_title), Some(given_artist)), expected);
     }
 
     #[test]
     fn test_fix_whitespace() {
-        let given = "    Foo Bar [feat.    Baz    Qux   ]    ".to_owned();
+        let given = "    Foo Bar [feat.    Baz    Qux   ]    ";
         let expected = Some("Foo Bar (feat. Baz Qux)".to_owned());
-        assert_eq!(fix_title(given, None), expected);
+        assert_eq!(fix_title(Some(given), None), expected);
     }
 }
