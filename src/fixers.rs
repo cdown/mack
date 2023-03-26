@@ -1,5 +1,6 @@
 use crate::extract::extract_feat;
-use crate::types::{MackError, Track, TrackFeat};
+use crate::types::{Track, TrackFeat};
+use anyhow::{bail, Result};
 use lazy_static::lazy_static;
 use regex::Regex;
 use taglib::Tag;
@@ -8,8 +9,11 @@ lazy_static! {
     static ref MULTI_WS_RE: Regex = Regex::new(r#"[ \t]+"#).expect("BUG: Invalid regex");
 }
 
-pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool, MackError> {
-    let mut tags = track.tag_file.tag()?;
+pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool> {
+    let mut tags = track
+        .tag_file
+        .tag()
+        .map_err(|_| anyhow::Error::msg("Failed to get tag"))?;
 
     fixer_is_blacklisted(&tags)?;
 
@@ -138,9 +142,9 @@ fn make_feat_string(featured_artists: &[String]) -> String {
     output
 }
 
-fn fixer_is_blacklisted(tags: &Tag) -> Result<(), MackError> {
+fn fixer_is_blacklisted(tags: &Tag) -> Result<()> {
     if tags.comment().unwrap_or_default().contains("_NO_MACK") {
-        Err(MackError::Blacklisted)
+        bail!("File contains _NO_MACK");
     } else {
         Ok(())
     }

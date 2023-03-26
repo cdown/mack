@@ -1,4 +1,5 @@
-use crate::types::{MackError, Track};
+use crate::types::Track;
+use anyhow::{Context, Result};
 use std::fs;
 use std::path::PathBuf;
 
@@ -28,8 +29,11 @@ fn sanitise_path_part(path_part: &str) -> String {
 }
 
 /// artist/album/2digitnum title.ext
-fn make_relative_rename_path(track: &Track, output_path: &PathBuf) -> Result<PathBuf, MackError> {
-    let tags = track.tag_file.tag()?;
+fn make_relative_rename_path(track: &Track, output_path: &PathBuf) -> Result<PathBuf> {
+    let tags = track
+        .tag_file
+        .tag()
+        .map_err(|_| anyhow::Error::msg("Failed to get tag"))?;
     let mut path = output_path.clone();
 
     path.push(&sanitise_path_part(
@@ -57,8 +61,8 @@ fn make_relative_rename_path(track: &Track, output_path: &PathBuf) -> Result<Pat
     Ok(path)
 }
 
-fn rename_creating_dirs(from: &PathBuf, to: &PathBuf) -> Result<(), MackError> {
-    fs::create_dir_all(to.parent().ok_or(MackError::WouldMoveToFsRoot)?)?;
+fn rename_creating_dirs(from: &PathBuf, to: &PathBuf) -> Result<()> {
+    fs::create_dir_all(to.parent().context("Refusing to move to FS root")?)?;
 
     // Trying to rename cross device? Just copy and unlink the old one
     if let Err(err) = fs::rename(from, to) {
@@ -78,7 +82,7 @@ pub fn rename_track(
     track: &Track,
     output_path: &PathBuf,
     dry_run: bool,
-) -> Result<Option<PathBuf>, MackError> {
+) -> Result<Option<PathBuf>> {
     let new_path = make_relative_rename_path(track, output_path)?;
 
     if new_path == track.path {

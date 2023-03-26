@@ -1,4 +1,4 @@
-use crate::types;
+use anyhow::Result;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
@@ -16,12 +16,12 @@ pub fn get_last_run_time(base_path: &PathBuf) -> Option<SystemTime> {
     get_mtime(last_run_path).ok()
 }
 
-fn get_mtime<T: AsRef<Path>>(path: T) -> Result<SystemTime, types::MackError> {
+fn get_mtime<T: AsRef<Path>>(path: T) -> Result<SystemTime> {
     let stat = fs::metadata(path.as_ref())?;
     Ok(stat.modified()?)
 }
 
-pub fn set_last_run_time(base_path: &PathBuf) -> Result<(), types::MackError> {
+pub fn set_last_run_time(base_path: &PathBuf) -> Result<()> {
     let last_run_path = make_lastmack_path(base_path);
     fs::File::create(last_run_path)?;
     Ok(())
