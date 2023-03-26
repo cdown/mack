@@ -71,10 +71,7 @@ fn fix_artist(old_artist: impl Into<Option<String>>) -> Option<String> {
 }
 
 fn fix_album(old_album: impl Into<Option<String>>) -> Option<String> {
-    let old_album = match old_album.into() {
-        Some(old_album) => old_album,
-        None => return None,
-    };
+    let Some(old_album) = old_album.into() else { return None };
     let new_album = normalise_field(&old_album);
 
     if new_album == old_album {
@@ -88,14 +85,9 @@ fn fix_title(
     old_title: impl Into<Option<String>>,
     old_artist: impl Into<Option<String>>,
 ) -> Option<String> {
-    let old_title = match old_title.into() {
-        Some(old_title) => old_title,
-        None => return None,
-    };
-
+    let Some(old_title) = old_title.into() else { return None };
     let old_title = extract_feat(&old_title);
     let old_artist = extract_feat(&old_artist.into().unwrap_or_default());
-
     let new_title = make_title(&old_title, &old_artist);
 
     if new_title == old_title.original_title {
