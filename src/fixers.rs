@@ -121,7 +121,7 @@ fn make_title(title: &TrackFeat, artist: &TrackFeat) -> String {
 
 fn make_feat_string(featured_artists: &[String]) -> String {
     let mut output = String::new();
-    let mut artist_idx = 1;
+    let mut artist_idx = 1i32;
 
     let mut artists = featured_artists.iter().peekable();
 
@@ -136,7 +136,7 @@ fn make_feat_string(featured_artists: &[String]) -> String {
             output.push_str(", ");
         }
         output.push_str(artist);
-        artist_idx += 1;
+        artist_idx = artist_idx.checked_add(1).expect("overflow");
     }
 
     output
