@@ -1,12 +1,3 @@
-#[macro_use]
-extern crate clap;
-extern crate walkdir;
-#[macro_use]
-extern crate lazy_static;
-extern crate libc;
-extern crate regex;
-extern crate taglib;
-
 mod extract;
 mod fixers;
 mod mtime;
@@ -18,6 +9,8 @@ use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::time::SystemTime;
 use walkdir::WalkDir;
+use clap::crate_version;
+use lazy_static::lazy_static;
 
 lazy_static! {
     static ref ALLOWED_EXTS: Vec<&'static OsStr> =
