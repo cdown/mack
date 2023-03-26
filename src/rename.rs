@@ -1,6 +1,6 @@
 use std::fs;
 use std::path::PathBuf;
-use types::{MackError, Track};
+use crate::types::{MackError, Track};
 
 // Arbitrary limit on path part without extension to try to avoid brushing against PATH_MAX. We
 // can't just check PATH_MAX and similar, because we also want to avoid issues when copying

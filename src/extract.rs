@@ -1,5 +1,5 @@
 use regex::{Regex, RegexBuilder};
-use types::TrackFeat;
+use crate::types::TrackFeat;
 
 const AMP_SPLITS: &[&str] = &[" & ", " and "];
 
