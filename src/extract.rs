@@ -15,13 +15,13 @@ lazy_static! {
 }
 
 pub fn extract_feat(title: &str) -> TrackFeat {
-    let caps = FEAT_RE.captures(&title);
+    let caps = FEAT_RE.captures(title);
 
     match caps {
         Some(caps) => {
             let trimmed = caps["feat_artists"].trim();
             let mut feat_artists: Vec<String> = FEAT_ARTIST_SPLIT
-                .split(&trimmed)
+                .split(trimmed)
                 .map(|x| x.to_owned())
                 .collect();
             let last_artist = feat_artists
@@ -44,7 +44,7 @@ pub fn extract_feat(title: &str) -> TrackFeat {
                 }
             }
 
-            let featless_title = FEAT_RE.replace_all(&title, "").trim().to_owned();
+            let featless_title = FEAT_RE.replace_all(title, "").trim().to_owned();
             TrackFeat {
                 title: featless_title,
                 featured_artists: feat_artists,

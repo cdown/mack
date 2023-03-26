@@ -12,8 +12,8 @@ fn make_lastmack_path(base_path: &PathBuf) -> PathBuf {
 }
 
 pub fn get_last_run_time(base_path: &PathBuf) -> Option<SystemTime> {
-    let last_run_path = make_lastmack_path(&base_path);
-    get_mtime(&last_run_path).ok()
+    let last_run_path = make_lastmack_path(base_path);
+    get_mtime(last_run_path).ok()
 }
 
 fn get_mtime<T: AsRef<Path>>(path: T) -> Result<SystemTime, types::MackError> {
@@ -22,8 +22,8 @@ fn get_mtime<T: AsRef<Path>>(path: T) -> Result<SystemTime, types::MackError> {
 }
 
 pub fn set_last_run_time(base_path: &PathBuf) -> Result<(), types::MackError> {
-    let last_run_path = make_lastmack_path(&base_path);
-    fs::File::create(&last_run_path)?;
+    let last_run_path = make_lastmack_path(base_path);
+    fs::File::create(last_run_path)?;
     Ok(())
 }
 

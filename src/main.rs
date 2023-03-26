@@ -14,7 +14,7 @@ use lazy_static::lazy_static;
 
 lazy_static! {
     static ref ALLOWED_EXTS: Vec<&'static OsStr> =
-        vec![&OsStr::new("mp3"), &OsStr::new("flac"), &OsStr::new("m4a")];
+        vec![OsStr::new("mp3"), OsStr::new("flac"), OsStr::new("m4a")];
 }
 
 fn parse_args() -> clap::ArgMatches {
@@ -62,7 +62,7 @@ fn fix_track(track: &mut types::Track, dry_run: bool) {
     }
 }
 
-fn print_updated_tags(track: &types::Track) -> () {
+fn print_updated_tags(track: &types::Track) {
     match track.tag_file.tag() {
         Ok(tags) => println!(
             "{}: updated tags: artist: '{}', album: '{}', title: '{}'",
@@ -80,7 +80,7 @@ fn print_updated_tags(track: &types::Track) -> () {
 }
 
 fn rename_track(track: &types::Track, output_path: &PathBuf, dry_run: bool) {
-    let new_path = rename::rename_track(&track, &output_path, dry_run);
+    let new_path = rename::rename_track(track, output_path, dry_run);
 
     match new_path {
         Ok(Some(new_path)) => println!(
@@ -97,7 +97,7 @@ fn is_eligible_for_fixing(path: &PathBuf, last_run_time: SystemTime, force: bool
     let parent = path.parent();
     path.is_file()
         && (force
-            || mtime::mtime_def_now(&path) > last_run_time
+            || mtime::mtime_def_now(path) > last_run_time
             || (parent.is_some() && mtime::mtime_def_now(parent.unwrap()) > last_run_time))
 }
 
@@ -106,30 +106,30 @@ fn fix_all_tracks(base_path: &PathBuf, output_path: &PathBuf, dry_run: bool, for
 
     // If the output path is different, we don't know if we should run or not, so just do them all
     if output_path == base_path {
-        last_run_time = mtime::get_last_run_time(&base_path).unwrap_or(SystemTime::UNIX_EPOCH);
+        last_run_time = mtime::get_last_run_time(base_path).unwrap_or(SystemTime::UNIX_EPOCH);
     } else {
         last_run_time = SystemTime::UNIX_EPOCH;
     }
 
-    let walker = WalkDir::new(&base_path)
+    let walker = WalkDir::new(base_path)
         .into_iter()
         .filter_map(|e| e.ok())
         .map(|e| e.path().to_path_buf())
         .filter(|e| ALLOWED_EXTS.contains(&e.extension().unwrap_or_else(|| OsStr::new(""))))
-        .filter(|e| is_eligible_for_fixing(&e, last_run_time, force));
+        .filter(|e| is_eligible_for_fixing(e, last_run_time, force));
 
     for path in walker {
         match track::get_track(path) {
             Ok(mut track) => {
                 fix_track(&mut track, dry_run);
-                rename_track(&track, &output_path, dry_run);
+                rename_track(&track, output_path, dry_run);
             }
             Err(err) => eprintln!("error: {:?}", err),
         }
     }
 
     if !dry_run && output_path == base_path {
-        mtime::set_last_run_time(&base_path).unwrap_or_else(|err| {
+        mtime::set_last_run_time(base_path).unwrap_or_else(|err| {
             eprintln!(
                 "can't set last run time for {}: {:?}",
                 base_path.display(),

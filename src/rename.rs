@@ -7,7 +7,7 @@ use crate::types::{MackError, Track};
 // elsewhere later.
 const MAX_PATH_PART_LEN: usize = 64;
 
-const ADDITIONAL_ACCEPTED_CHARS: &'static [char] = &['.', '-', '(', ')', ','];
+const ADDITIONAL_ACCEPTED_CHARS: &[char] = &['.', '-', '(', ')', ','];
 
 fn sanitise_path_part(path_part: &str) -> String {
     let mut out: String = path_part
@@ -58,14 +58,14 @@ fn make_relative_rename_path(track: &Track, output_path: &PathBuf) -> Result<Pat
 }
 
 fn rename_creating_dirs(from: &PathBuf, to: &PathBuf) -> Result<(), MackError> {
-    fs::create_dir_all(&to.parent().ok_or(MackError::WouldMoveToFsRoot)?)?;
+    fs::create_dir_all(to.parent().ok_or(MackError::WouldMoveToFsRoot)?)?;
 
     // Trying to rename cross device? Just copy and unlink the old one
-    if let Err(err) = fs::rename(&from, &to) {
+    if let Err(err) = fs::rename(from, to) {
         if let Some(os_err) = err.raw_os_error() {
             if os_err == libc::EXDEV {
-                fs::copy(&from, &to)?;
-                fs::remove_file(&from)?;
+                fs::copy(from, to)?;
+                fs::remove_file(from)?;
             } else {
                 Err(err)?;
             }
@@ -79,7 +79,7 @@ pub fn rename_track(
     output_path: &PathBuf,
     dry_run: bool,
 ) -> Result<Option<PathBuf>, MackError> {
-    let new_path = make_relative_rename_path(&track, &output_path)?;
+    let new_path = make_relative_rename_path(track, output_path)?;
 
     if new_path == track.path {
         return Ok(None);

@@ -49,13 +49,11 @@ fn normalise_field(field: &str) -> String {
 
     new_field = new_field.trim().to_owned();
     new_field
-        .replace("[", "(")
-        .replace("]", ")")
-        .replace("…", "...")
-        .replace("“", "\"")
-        .replace("”", "\"")
-        .replace("‘", "'")
-        .replace("’", "'")
+        .replace('[', "(")
+        .replace(']', ")")
+        .replace('…', "...")
+        .replace(['“', '”'], "\"")
+        .replace(['‘', '’'], "'")
 }
 
 fn fix_artist(old_artist: impl Into<Option<String>>) -> Option<String> {
