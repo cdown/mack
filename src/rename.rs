@@ -4,6 +4,11 @@ use id3::TagLike;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+#[cfg(target_family = "unix")]
+use libc::EXDEV as xdev_err;
+#[cfg(target_family = "windows")]
+use winapi::shared::winerror::ERROR_NOT_SAME_DEVICE as xdev_err;
+
 // Arbitrary limit on path part without extension to try to avoid brushing against PATH_MAX. We
 // can't just check PATH_MAX and similar, because we also want to avoid issues when copying
 // elsewhere later.
@@ -59,13 +64,13 @@ fn rename_creating_dirs(from: &PathBuf, to: &PathBuf) -> Result<()> {
 
     // Trying to rename cross device? Just copy and unlink the old one
     if let Err(err) = fs::rename(from, to) {
-        if let Some(os_err) = err.raw_os_error() {
-            if os_err == libc::EXDEV {
-                fs::copy(from, to)?;
-                fs::remove_file(from)?;
-            } else {
-                Err(err)?;
-            }
+        #[allow(clippy::useless_conversion)] // Necessary for Windows only
+        let xdev_err_cast = xdev_err.try_into()?;
+        if err.raw_os_error() == Some(xdev_err_cast) {
+            fs::copy(from, to)?;
+            fs::remove_file(from)?;
+        } else {
+            Err(err)?;
         }
     }
     Ok(())
