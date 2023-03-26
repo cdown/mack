@@ -1,7 +1,7 @@
 use crate::types::Track;
 use anyhow::{Context, Result};
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 // Arbitrary limit on path part without extension to try to avoid brushing against PATH_MAX. We
 // can't just check PATH_MAX and similar, because we also want to avoid issues when copying
@@ -29,12 +29,12 @@ fn sanitise_path_part(path_part: &str) -> String {
 }
 
 /// artist/album/2digitnum title.ext
-fn make_relative_rename_path(track: &Track, output_path: &PathBuf) -> Result<PathBuf> {
+fn make_relative_rename_path(track: &Track, output_path: &Path) -> Result<PathBuf> {
     let tags = track
         .tag_file
         .tag()
         .map_err(|_| anyhow::Error::msg("Failed to get tag"))?;
-    let mut path = output_path.clone();
+    let mut path = output_path.to_path_buf();
 
     path.push(&sanitise_path_part(
         &tags
@@ -78,11 +78,7 @@ fn rename_creating_dirs(from: &PathBuf, to: &PathBuf) -> Result<()> {
     Ok(())
 }
 
-pub fn rename_track(
-    track: &Track,
-    output_path: &PathBuf,
-    dry_run: bool,
-) -> Result<Option<PathBuf>> {
+pub fn rename_track(track: &Track, output_path: &Path, dry_run: bool) -> Result<Option<PathBuf>> {
     let new_path = make_relative_rename_path(track, output_path)?;
 
     if new_path == track.path {

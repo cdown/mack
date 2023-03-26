@@ -8,7 +8,7 @@ mod types;
 use clap::crate_version;
 use lazy_static::lazy_static;
 use std::ffi::OsStr;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use walkdir::WalkDir;
 
@@ -79,7 +79,7 @@ fn print_updated_tags(track: &types::Track) {
     }
 }
 
-fn rename_track(track: &types::Track, output_path: &PathBuf, dry_run: bool) {
+fn rename_track(track: &types::Track, output_path: &Path, dry_run: bool) {
     let new_path = rename::rename_track(track, output_path, dry_run);
 
     match new_path {
@@ -101,15 +101,13 @@ fn is_eligible_for_fixing(path: &PathBuf, last_run_time: SystemTime, force: bool
             || (parent.is_some() && mtime::mtime_def_now(parent.unwrap()) > last_run_time))
 }
 
-fn fix_all_tracks(base_path: &PathBuf, output_path: &PathBuf, dry_run: bool, force: bool) {
-    let last_run_time;
-
+fn fix_all_tracks(base_path: &PathBuf, output_path: &Path, dry_run: bool, force: bool) {
     // If the output path is different, we don't know if we should run or not, so just do them all
-    if output_path == base_path {
-        last_run_time = mtime::get_last_run_time(base_path).unwrap_or(SystemTime::UNIX_EPOCH);
+    let last_run_time = if output_path == base_path {
+        mtime::get_last_run_time(base_path).unwrap_or(SystemTime::UNIX_EPOCH)
     } else {
-        last_run_time = SystemTime::UNIX_EPOCH;
-    }
+        SystemTime::UNIX_EPOCH
+    };
 
     let walker = WalkDir::new(base_path)
         .into_iter()
