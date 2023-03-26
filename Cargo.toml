@@ -6,17 +6,13 @@ description = "An opinionated, fast music organiser."
 homepage = "https://github.com/cdown/mack"
 readme = "README.md"
 keywords = ["music", "audio", "organiser", "tagging", "mp3"]
+categories = ["command-line-utilities", "filesystem"]
 license = "Unlicense"
 
 [dependencies]
-clap = { version = "3", features = ["cargo"] }
-walkdir = "2"
-lazy_static = "1"
-regex = "1"
-taglib = "1"
-libc = "0.2"
-
-[profile.release]
-lto = true
-codegen-units = 1
-debug = true
+clap = { version = "3.2.23", features = ["cargo"] }
+walkdir = "2.3.3"
+lazy_static = "1.4.0"
+regex = "1.7.3"
+taglib = "1.0.0"
+libc = "0.2.140"
