@@ -63,10 +63,10 @@ fn normalise_field(field: &str) -> String {
 fn fix_artist(old_artist: impl Into<Option<String>>) -> Option<String> {
     let field = normalise_field(&old_artist.into().unwrap_or_default());
     let artist = extract_feat(&field);
-    if artist.title != artist.original_title {
-        Some(artist.title)
-    } else {
+    if artist.title == artist.original_title {
         None
+    } else {
+        Some(artist.title)
     }
 }
 
@@ -77,10 +77,10 @@ fn fix_album(old_album: impl Into<Option<String>>) -> Option<String> {
     };
     let new_album = normalise_field(&old_album);
 
-    if new_album != old_album {
-        Some(new_album)
-    } else {
+    if new_album == old_album {
         None
+    } else {
+        Some(new_album)
     }
 }
 
@@ -98,10 +98,10 @@ fn fix_title(
 
     let new_title = make_title(&old_title, &old_artist);
 
-    if new_title != old_title.original_title {
-        Some(new_title)
-    } else {
+    if new_title == old_title.original_title {
         None
+    } else {
+        Some(new_title)
     }
 }
 
