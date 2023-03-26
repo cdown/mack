@@ -5,7 +5,7 @@ mod rename;
 mod track;
 mod types;
 
-use clap::crate_version;
+use clap::Parser;
 use id3::TagLike;
 use lazy_static::lazy_static;
 use std::ffi::OsStr;
@@ -16,39 +16,6 @@ use walkdir::WalkDir;
 lazy_static! {
     static ref ALLOWED_EXTS: Vec<&'static OsStr> =
         vec![OsStr::new("mp3"), OsStr::new("flac"), OsStr::new("m4a")];
-}
-
-fn parse_args() -> clap::ArgMatches {
-    clap::App::new("mack")
-        .version(crate_version!())
-        .about("The opinionated music library organiser.")
-        .arg(
-            clap::Arg::with_name("PATH")
-                .multiple(true)
-                .default_value(".")
-                .help("Paths to get files from, directories are recursed into"),
-        )
-        .arg(
-            clap::Arg::with_name("dry_run")
-                .long("dry-run")
-                .short('n')
-                .help("Show what we would do, but don't do it"),
-        )
-        .arg(
-            clap::Arg::with_name("force")
-                .long("force")
-                .short('f')
-                .help("Ignore .lastmack timestamp, run on all files present regardless"),
-        )
-        .arg(
-            clap::Arg::with_name("output_dir")
-                .long("output-dir")
-                .short('o')
-                .value_name("DIR")
-                .takes_value(true)
-                .help("Use a different output directory (default: the same as the input dir)"),
-        )
-        .get_matches()
 }
 
 fn fix_track(track: &mut types::Track, dry_run: bool) {
@@ -132,39 +99,23 @@ fn fix_all_tracks(base_path: &PathBuf, output_path: &Path, dry_run: bool, force:
 }
 
 fn main() {
-    let args = parse_args();
+    let args = types::Config::parse();
 
-    let output_path = if args.is_present("output_dir") {
-        let mut inner = PathBuf::new();
-        inner.push(
-            args.value_of("output_dir")
-                .expect("BUG: where did output_dir arg go?"),
-        );
-        Some(inner)
+    let paths = if args.paths.is_empty() {
+        vec![PathBuf::from(".")]
     } else {
-        None
+        args.paths
     };
 
-    for raw_path in args
-        .values_of("PATH")
-        .expect("BUG: missing default path")
-        .collect::<Vec<&str>>()
-    {
+    for path in paths {
         let this_output_path;
-        let mut path = PathBuf::new();
-        path.push(raw_path);
 
-        if let Some(op) = output_path.clone() {
+        if let Some(op) = args.output_dir.clone() {
             this_output_path = op;
         } else {
             this_output_path = path.clone();
         }
 
-        fix_all_tracks(
-            &path,
-            &this_output_path,
-            args.is_present("dry_run"),
-            args.is_present("force"),
-        );
+        fix_all_tracks(&path, &this_output_path, args.dry_run, args.force);
     }
 }
