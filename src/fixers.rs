@@ -120,7 +120,7 @@ fn make_title(title: &TrackFeat, artist: &TrackFeat) -> String {
 }
 
 fn make_feat_string(featured_artists: &[String]) -> String {
-    let mut output = "".to_owned();
+    let mut output = String::new();
     let mut artist_idx = 1;
 
     let mut artists = featured_artists.iter().peekable();

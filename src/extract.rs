@@ -22,7 +22,7 @@ pub fn extract_feat(title: &str) -> TrackFeat {
             let trimmed = caps["feat_artists"].trim();
             let mut feat_artists: Vec<String> = FEAT_ARTIST_SPLIT
                 .split(trimmed)
-                .map(|x| x.to_owned())
+                .map(std::borrow::ToOwned::to_owned)
                 .collect();
             let last_artist = feat_artists
                 .last()
@@ -35,7 +35,7 @@ pub fn extract_feat(title: &str) -> TrackFeat {
                 if last_artist.contains(amp_split) {
                     let mut tmp_last_split: Vec<String> = last_artist
                         .rsplitn(2, amp_split)
-                        .map(|x| x.to_owned())
+                        .map(std::borrow::ToOwned::to_owned)
                         .collect();
                     tmp_last_split.reverse();
                     feat_artists.pop();
