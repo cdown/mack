@@ -1,7 +1,7 @@
+use crate::types;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
-use crate::types;
 
 const LASTMACK_NAME: &str = ".lastmack";
 

@@ -1,8 +1,8 @@
 use crate::extract::extract_feat;
-use regex::Regex;
-use taglib::Tag;
 use crate::types::{MackError, Track, TrackFeat};
 use lazy_static::lazy_static;
+use regex::Regex;
+use taglib::Tag;
 
 lazy_static! {
     static ref MULTI_WS_RE: Regex = Regex::new(r#"[ \t]+"#).expect("BUG: Invalid regex");

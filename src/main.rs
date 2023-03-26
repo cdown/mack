@@ -5,12 +5,12 @@ mod rename;
 mod track;
 mod types;
 
+use clap::crate_version;
+use lazy_static::lazy_static;
 use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::time::SystemTime;
 use walkdir::WalkDir;
-use clap::crate_version;
-use lazy_static::lazy_static;
 
 lazy_static! {
     static ref ALLOWED_EXTS: Vec<&'static OsStr> =

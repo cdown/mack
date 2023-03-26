@@ -1,6 +1,6 @@
-use regex::{Regex, RegexBuilder};
 use crate::types::TrackFeat;
 use lazy_static::lazy_static;
+use regex::{Regex, RegexBuilder};
 
 const AMP_SPLITS: &[&str] = &[" & ", " and "];
 
