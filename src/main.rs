@@ -78,12 +78,12 @@ fn fix_all_tracks(base_path: &PathBuf, output_path: &Path, dry_run: bool, force:
         .filter(|e| is_eligible_for_fixing(e, last_run_time, force));
 
     for path in walker {
-        match track::get_track(path) {
+        match track::get_track(path.clone()) {
             Ok(mut track) => {
                 fix_track(&mut track, dry_run);
                 rename_track(&track, output_path, dry_run);
             }
-            Err(err) => eprintln!("error: {err:?}"),
+            Err(err) => eprintln!("error: {}: {err:?}", path.display()),
         }
     }
 
