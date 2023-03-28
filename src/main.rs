@@ -7,16 +7,12 @@ mod types;
 
 use clap::Parser;
 use id3::TagLike;
-use lazy_static::lazy_static;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use walkdir::WalkDir;
 
-lazy_static! {
-    static ref ALLOWED_EXTS: Vec<&'static OsStr> =
-        vec![OsStr::new("mp3"), OsStr::new("flac"), OsStr::new("m4a")];
-}
+static ALLOWED_EXTS: &[&str] = &["mp3", "flac", "m4a"];
 
 fn fix_track(track: &mut types::Track, dry_run: bool) {
     let fix_results = fixers::run_fixers(track, dry_run);
@@ -71,7 +67,11 @@ fn fix_all_tracks(base_path: &PathBuf, output_path: &Path, dry_run: bool, force:
         .filter_map(std::result::Result::ok)
         .filter(|e| e.file_type().is_file())
         .map(|e| e.path().to_path_buf())
-        .filter(|e| ALLOWED_EXTS.contains(&e.extension().unwrap_or_else(|| OsStr::new(""))))
+        .filter(|e| {
+            ALLOWED_EXTS
+                .iter()
+                .any(|ext| &e.extension().and_then(OsStr::to_str).unwrap_or("") == ext)
+        })
         .filter(|e| force || is_updated_since_last_run(e, last_run_time));
 
     for path in walker {
