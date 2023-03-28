@@ -54,11 +54,8 @@ fn rename_track(track: &types::Track, output_path: &Path, dry_run: bool) {
     }
 }
 
-fn is_eligible_for_fixing(path: &PathBuf, last_run_time: SystemTime, force: bool) -> bool {
-    let parent = path.parent();
-    force
-        || mtime::mtime_def_now(path) > last_run_time
-        || (parent.is_some() && mtime::mtime_def_now(parent.unwrap()) > last_run_time)
+fn is_updated_since_last_run(path: &PathBuf, last_run_time: SystemTime) -> bool {
+    mtime::mtime_def_now(path) > last_run_time
 }
 
 fn fix_all_tracks(base_path: &PathBuf, output_path: &Path, dry_run: bool, force: bool) {
@@ -75,7 +72,7 @@ fn fix_all_tracks(base_path: &PathBuf, output_path: &Path, dry_run: bool, force:
         .filter(|e| e.file_type().is_file())
         .map(|e| e.path().to_path_buf())
         .filter(|e| ALLOWED_EXTS.contains(&e.extension().unwrap_or_else(|| OsStr::new(""))))
-        .filter(|e| is_eligible_for_fixing(e, last_run_time, force));
+        .filter(|e| force || is_updated_since_last_run(e, last_run_time));
 
     for path in walker {
         match track::get_track(path.clone()) {
