@@ -11,7 +11,7 @@ categories = ["command-line-utilities", "filesystem"]
 license = "Unlicense"
 
 [dependencies]
-clap = { version = "4.1.14", features = ["derive"] }
+clap = { version = "4.2.0", features = ["derive"] }
 walkdir = "2.3.3"
 lazy_static = "1.4.0"
 regex = "1.7.3"
