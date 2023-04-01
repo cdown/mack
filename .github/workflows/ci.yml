@@ -1,4 +1,3 @@
-
 jobs:
   build_and_test:
     name: CI
@@ -12,7 +11,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
 
       - run: cargo fmt --all -- --check
-      - run: cargo clippy --all -- -D warnings
+      - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test --release --all-features --all
       - run: cargo build --release --all-features
 
