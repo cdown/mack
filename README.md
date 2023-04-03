@@ -1,15 +1,15 @@
 # mack | [![Tests](https://img.shields.io/github/actions/workflow/status/cdown/mack/ci.yml?branch=master)](https://github.com/cdown/mack/actions?query=branch%3Amaster)
 
-mack is to music files as [black][black] is to code formatting. It enforces
-standards around both consistency of the metadata (eg. ID3 version) and the
-metadata itself (eg. "feat" tagging).
+mack enforces standards around both consistency of the metadata (eg. ID3
+version) and the metadata itself (eg. "feat" tagging).
 
 ## Examples of fixes
 
 - Moving featured artists from the artist tag to the title
 - Enforcing a consistent "feat" format in title tags
 - Whitespace normalisation
-- Renaming files to format "{artist}/{album}/{track} {title}"
+- Renaming files to format "{artist}/{album}/{track} {title}", or another
+  format specified with `--fmt`
 
 ## Usage
 
@@ -37,9 +37,5 @@ under most circumstances (0.2 seconds on the very first run).
 
 ## Configuration
 
-In a similar philosophy to [black][black], most things cannot be configured --
-you either use mack or you don't. There is one thing you can control though: if
-you don't want a particular file to be touched by mack, add `_NO_MACK` as a
+If you don't want a particular file to be touched by mack, add `_NO_MACK` as a
 substring anywhere in the comment tag.
-
-[black]: https://github.com/ambv/black

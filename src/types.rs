@@ -38,6 +38,31 @@ pub struct Config {
     )]
     pub output_dir: Option<PathBuf>,
 
+    /// The format to apply to files, excluding the extension. Substitutions can be applied inside
+    /// curly brackets, for example with {artist} to get the track artist. Any formats returning
+    /// data with "/" will have it transformed to "_".
+    ///
+    /// The default value is "{artist}/{album}/{track} {title}".
+    ///
+    /// Available formats:
+    ///
+    /// TAG:
+    ///
+    ///   artist
+    ///   album
+    ///   track  (width: 2)
+    ///   title
+    ///
+    /// LITERAL:
+    ///
+    ///   {{ and }} indicate literal brackets.
+    #[arg(
+        long,
+        verbatim_doc_comment,
+        default_value = "{artist}/{album}/{track} {title}"
+    )]
+    pub fmt: String,
+
     #[arg(help = "Directories to find music files in.")]
     pub paths: Vec<PathBuf>,
 }
