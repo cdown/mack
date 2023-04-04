@@ -1,6 +1,7 @@
 use crate::types::Track;
 use anyhow::{Context, Result};
 use funcfmt::{FormatPieces, Render};
+use std::ffi::{OsStr, OsString};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -26,6 +27,33 @@ fn rename_creating_dirs(from: &PathBuf, to: &PathBuf) -> Result<()> {
     Ok(())
 }
 
+// Arbitrary limit on path part without extension to try to avoid brushing against PATH_MAX. We
+// can't just check PATH_MAX and similar, because we also want to avoid issues when copying
+// elsewhere later.
+const MAX_PATH_PART_LEN: usize = 64;
+fn truncate_dirs(path_part: String) -> PathBuf {
+    let partial = PathBuf::from(path_part);
+    partial
+        .components()
+        .map(|c| {
+            let mut s = c
+                .as_os_str()
+                .to_os_string()
+                .into_string()
+                .expect("invalid path");
+            s.truncate(MAX_PATH_PART_LEN);
+            s
+        })
+        .collect()
+}
+
+fn add_extension(path: PathBuf, ext: impl AsRef<OsStr>) -> PathBuf {
+    let mut os_string: OsString = path.into();
+    os_string.push(".");
+    os_string.push(ext.as_ref());
+    os_string.into()
+}
+
 pub fn rename_track(
     track: &Track,
     fp: &FormatPieces<Track>,
@@ -33,10 +61,12 @@ pub fn rename_track(
     dry_run: bool,
 ) -> Result<Option<PathBuf>> {
     let mut new_path = output_path.to_path_buf();
-    let partial = fp.render(track)?;
+    let partial = truncate_dirs(fp.render(track)?);
     new_path.push(partial);
 
-    new_path.set_extension(
+    // We might have truncated and have a dot elsewhere, so we can't use set_extension
+    new_path = add_extension(
+        new_path,
         track
             .path
             .extension()

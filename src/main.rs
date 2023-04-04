@@ -57,14 +57,10 @@ fn rename_track(
     }
 }
 
-// Arbitrary limit on path part without extension to try to avoid brushing against PATH_MAX. We
-// can't just check PATH_MAX and similar, because we also want to avoid issues when copying
-// elsewhere later.
-const MAX_PATH_PART_LEN: usize = 64;
 const ADDITIONAL_ACCEPTED_CHARS: &[char] = &['.', '-', '(', ')', ','];
 
 fn clean_part(path_part: &str) -> String {
-    let mut out: String = path_part
+    path_part
         .chars()
         .map(|c| {
             if c.is_alphanumeric()
@@ -76,9 +72,7 @@ fn clean_part(path_part: &str) -> String {
                 '_'
             }
         })
-        .collect();
-    out.truncate(MAX_PATH_PART_LEN);
-    out
+        .collect()
 }
 
 fn get_format_pieces(tmpl: &str) -> Result<funcfmt::FormatPieces<types::Track>> {
