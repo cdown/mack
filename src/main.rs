@@ -110,7 +110,7 @@ fn fix_all_tracks(cfg: &types::Config, base_path: &PathBuf, output_path: &Path) 
     let fp = match get_format_pieces(&cfg.fmt) {
         Ok(fp) => fp,
         Err(err) => {
-            eprintln!("fatal: {}", err);
+            eprintln!("fatal: {err}");
             std::panic::set_hook(Box::new(|_| {}));
             panic!(); // Don't use exit() because it does not run destructors
         }
