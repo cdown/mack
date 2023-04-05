@@ -2,12 +2,11 @@ use crate::extract::extract_feat;
 use crate::types::{Track, TrackFeat};
 use anyhow::{bail, Result};
 use id3::{Tag, TagLike, Version};
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use regex::Regex;
 
-lazy_static! {
-    static ref MULTI_WS_RE: Regex = Regex::new(r#"[ \t]+"#).expect("BUG: Invalid regex");
-}
+static MULTI_WS_RE: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"[ \t]+"#).expect("BUG: Invalid regex"));
 
 pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool> {
     let tags = &mut track.tag;
