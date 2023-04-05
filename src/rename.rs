@@ -28,14 +28,12 @@ fn rename_creating_dirs(from: &PathBuf, to: &PathBuf) -> Result<()> {
 }
 
 /// String::truncate will panic if not at a char boundary
-fn safe_truncate(s: impl AsRef<str>, max_chars: usize) -> String {
-    let s = s.as_ref();
+fn safe_truncate(s: &mut String, max_chars: usize) {
     let idx = match s.char_indices().nth(max_chars) {
         Some((idx, _)) => idx,
-        None => return s.to_string(),
+        None => return,
     };
-
-    s[..idx].to_string()
+    s.truncate(idx)
 }
 
 // Arbitrary limit on path part without extension to try to avoid brushing against PATH_MAX. We
@@ -47,12 +45,13 @@ fn truncate_dirs(path_part: String) -> PathBuf {
     partial
         .components()
         .map(|c| {
-            let s = c
+            let mut s = c
                 .as_os_str()
                 .to_os_string()
                 .into_string()
                 .expect("invalid path");
-            safe_truncate(s, MAX_PATH_PART_LEN)
+            safe_truncate(&mut s, MAX_PATH_PART_LEN);
+            s
         })
         .collect()
 }
