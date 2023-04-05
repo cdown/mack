@@ -1,18 +1,18 @@
 use crate::types::TrackFeat;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use regex::{Regex, RegexBuilder};
 
 const AMP_SPLITS: &[&str] = &[" & ", " and "];
 
-lazy_static! {
-    static ref FEAT_RE: Regex =
-        RegexBuilder::new(r#" [(\[]?(f(ea)?t[a-z]*\.?|f\.) (?P<feat_artists>[^)\]]+)[)\]]?"#)
-            .case_insensitive(true)
-            .build()
-            .expect("BUG: Invalid regex");
-    static ref FEAT_ARTIST_SPLIT: Regex =
-        Regex::new(r#", (?:and |& )?"#).expect("BUG: Invalid regex");
-}
+static FEAT_RE: Lazy<Regex> = Lazy::new(|| {
+    RegexBuilder::new(r#" [(\[]?(f(ea)?t[a-z]*\.?|f\.) (?P<feat_artists>[^)\]]+)[)\]]?"#)
+        .case_insensitive(true)
+        .build()
+        .expect("BUG: Invalid regex")
+});
+
+static FEAT_ARTIST_SPLIT: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#", (?:and |& )?"#).expect("BUG: Invalid regex"));
 
 pub fn extract_feat(title: &str) -> TrackFeat {
     let caps = FEAT_RE.captures(title);
