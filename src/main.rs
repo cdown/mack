@@ -122,9 +122,8 @@ fn fix_all_tracks(cfg: &types::Config, base_path: &PathBuf, output_path: &Path) 
         .filter(|e| e.file_type().is_file())
         .map(|e| e.path().to_path_buf())
         .filter(|e| {
-            ALLOWED_EXTS
-                .iter()
-                .any(|ext| &e.extension().and_then(OsStr::to_str).unwrap_or("") == ext)
+            let ext = e.extension().and_then(OsStr::to_str).unwrap_or("");
+            ALLOWED_EXTS.iter().any(|a| a == &ext)
         })
         .filter(|e| cfg.force || is_updated_since_last_run(e, last_run_time));
 
