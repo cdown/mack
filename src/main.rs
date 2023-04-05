@@ -12,7 +12,7 @@ use id3::TagLike;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
-use walkdir::WalkDir;
+use walkdir::{DirEntry, WalkDir};
 
 const ALLOWED_EXTS: &[&str] = &["mp3", "flac", "m4a"];
 
@@ -120,7 +120,7 @@ fn fix_all_tracks(cfg: &types::Config, base_path: &PathBuf, output_path: &Path) 
         .into_iter()
         .filter_map(std::result::Result::ok)
         .filter(|e| e.file_type().is_file())
-        .map(|e| e.into_path())
+        .map(DirEntry::into_path)
         .filter(|e| {
             let ext = e
                 .extension()
