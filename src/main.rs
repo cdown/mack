@@ -120,7 +120,7 @@ fn fix_all_tracks(cfg: &types::Config, base_path: &PathBuf, output_path: &Path) 
         .into_iter()
         .filter_map(std::result::Result::ok)
         .filter(|e| e.file_type().is_file())
-        .map(|e| e.path().to_path_buf())
+        .map(|e| e.into_path())
         .filter(|e| {
             let ext = e.extension().and_then(OsStr::to_str).unwrap_or("");
             ALLOWED_EXTS.iter().any(|a| a == &ext)
