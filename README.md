@@ -1,7 +1,12 @@
 # mack | [![Tests](https://img.shields.io/github/actions/workflow/status/cdown/mack/ci.yml?branch=master)](https://github.com/cdown/mack/actions?query=branch%3Amaster)
 
-mack enforces standards around both consistency of the metadata (eg. ID3
-version) and the metadata itself (eg. "feat" tagging).
+mack is an opinionated, fast music organiser. It enforces:
+
+- Directory layout
+- File name format
+- Metadata consistency (e.g., consistent "feat" tagging)
+- Format consistency (e.g., ID3 version)
+- ...and more!
 
 ## Examples of fixes
 
