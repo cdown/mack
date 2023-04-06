@@ -81,7 +81,7 @@ fn fix_title(old_title: Option<&str>, old_artist: Option<&str>) -> Option<String
     let Some(old_title) = old_title else { return None };
     let old_title = extract_feat(old_title);
     let old_artist = extract_feat(old_artist.unwrap_or_default());
-    let new_title = make_title(&old_title, &old_artist);
+    let new_title = make_title(&old_title, old_artist);
 
     if new_title == old_title.original_title {
         None
@@ -90,9 +90,9 @@ fn fix_title(old_title: Option<&str>, old_artist: Option<&str>) -> Option<String
     }
 }
 
-fn make_title(title: &TrackFeat, artist: &TrackFeat) -> String {
+fn make_title(title: &TrackFeat, artist: TrackFeat) -> String {
     let mut featured_artists = title.featured_artists.clone();
-    featured_artists.extend(artist.featured_artists.clone());
+    featured_artists.extend(artist.featured_artists);
 
     let mut new_title = title.title.clone();
     if !featured_artists.is_empty() {

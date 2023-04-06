@@ -26,8 +26,7 @@ pub fn extract_feat(title: &str) -> TrackFeat {
                 .collect();
             let last_artist = feat_artists
                 .last()
-                .expect("BUG: captured, but no featured artists")
-                .clone();
+                .expect("BUG: captured, but no featured artists");
 
             // If the last artist contains an "&", we'll split on it, even without a comma. This
             // isn't perfect, but is mostly right.
