@@ -1,6 +1,7 @@
 use crate::extract::extract_feat;
 use crate::types::{Track, TrackFeat};
 use anyhow::{bail, Result};
+use cow_utils::CowUtils;
 use id3::{Tag, TagLike, Version};
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -50,11 +51,14 @@ fn normalise_field(field: &str) -> String {
 
     new_field = new_field.trim().to_owned();
     new_field
-        .replace('[', "(")
-        .replace(']', ")")
-        .replace('…', "...")
-        .replace(['“', '”'], "\"")
-        .replace(['‘', '’'], "'")
+        .cow_replace('[', "(")
+        .cow_replace(']', ")")
+        .cow_replace('…', "...")
+        .cow_replace('“', "\"")
+        .cow_replace('”', "\"")
+        .cow_replace('‘', "'")
+        .cow_replace('’', "'")
+        .to_string()
 }
 
 fn fix_artist(old_artist: Option<&str>) -> Option<String> {
