@@ -37,8 +37,8 @@ You can see what would be changed first using `--dry-run`.
 
 mack has a strong focus on performance. Files which were not updated since the
 last mack run will not be examined at all. On a sample modern laptop with a
-mid-spec SSD, this means that we only take 0.02 seconds to run over 5000 files
-under most circumstances (0.2 seconds on the very first run).
+mid-spec SSD, this means that we only take 0.005 seconds to run over ~3500
+files under most circumstances (0.04 seconds on the very first run).
 
 ## Configuration
 
