@@ -9,6 +9,7 @@ readme = "README.md"
 keywords = ["music", "audio", "organiser", "tagging", "mp3"]
 categories = ["command-line-utilities", "filesystem"]
 license = "Unlicense"
+rust-version = "1.65.0"
 
 [dependencies]
 clap = { version = "4.2.1", features = ["derive"] }
