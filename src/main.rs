@@ -9,6 +9,7 @@ use anyhow::Result;
 use clap::Parser;
 use funcfmt::{fm, FormatMap, FormatPieces, ToFormatPieces};
 use id3::TagLike;
+use rayon::prelude::*;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
@@ -116,7 +117,7 @@ fn fix_all_tracks(cfg: &types::Config, base_path: &PathBuf, output_path: &Path) 
         }
     };
 
-    let walker = WalkDir::new(base_path)
+    WalkDir::new(base_path)
         .into_iter()
         .filter_map(std::result::Result::ok)
         .filter(|e| e.file_type().is_file())
@@ -129,17 +130,16 @@ fn fix_all_tracks(cfg: &types::Config, base_path: &PathBuf, output_path: &Path) 
                 .to_lowercase();
             ALLOWED_EXTS.iter().any(|a| a == &ext)
         })
-        .filter(|e| cfg.force || is_updated_since_last_run(e, last_run_time));
-
-    for path in walker {
-        match track::get_track(path.clone()) {
+        .filter(|e| cfg.force || is_updated_since_last_run(e, last_run_time))
+        .collect::<Vec<_>>()
+        .into_par_iter()
+        .for_each(|path| match track::get_track(path.clone()) {
             Ok(mut track) => {
                 fix_track(&mut track, cfg.dry_run);
                 rename_track(&track, &fp, output_path, cfg.dry_run);
             }
             Err(err) => eprintln!("error: {}: {err:?}", path.display()),
-        }
-    }
+        });
 
     if !cfg.dry_run && output_path == base_path {
         mtime::set_last_run_time(base_path).unwrap_or_else(|err| {
