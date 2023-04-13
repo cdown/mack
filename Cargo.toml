@@ -8,7 +8,7 @@ repository = "https://github.com/cdown/mack"
 readme = "README.md"
 keywords = ["music", "audio", "organiser", "tagging", "mp3"]
 categories = ["command-line-utilities", "filesystem"]
-license = "Unlicense"
+license = "MIT"
 rust-version = "1.65.0"
 
 [dependencies]
