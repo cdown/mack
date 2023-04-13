@@ -38,11 +38,10 @@ pub struct Config {
     )]
     pub output_dir: Option<PathBuf>,
 
-    /// The format to apply to files, excluding the extension. Substitutions can be applied inside
-    /// curly brackets, for example with {artist} to get the track artist. Any formats returning
-    /// data with "/" will have it transformed to "_".
+    /// The format to apply to files, excluding the extension.
     ///
-    /// The default value is "{artist}/{album}/{track} {title}".
+    /// Substitutions can be applied inside curly brackets, for example with {artist} to get the
+    /// track artist. Any formats returning data with "/" will have it transformed to "_".
     ///
     /// Available formats:
     ///
