@@ -77,21 +77,21 @@ fn clean_part(path_part: &str) -> String {
 }
 
 fn get_format_pieces(tmpl: &str) -> Result<funcfmt::FormatPieces<types::Track>> {
-    let formatters: FormatMap<types::Track> = FormatMap::from([
-        fm!("artist", |t: &types::Track| Some(clean_part(
+    let formatters: FormatMap<types::Track> = fm!(
+        "artist" => |t: &types::Track| Some(clean_part(
             t.tag.artist().unwrap_or("Unknown Artist")
-        ))),
-        fm!("album", |t: &types::Track| Some(clean_part(
+        )),
+        "album" => |t: &types::Track| Some(clean_part(
             t.tag.album().unwrap_or("Unknown Album")
-        ))),
-        fm!("title", |t: &types::Track| Some(clean_part(
+        )),
+        "title" => |t: &types::Track| Some(clean_part(
             t.tag.title().unwrap_or("Unknown Title")
-        ))),
-        fm!("track", |t: &types::Track| Some(format!(
+        )),
+        "track" => |t: &types::Track| Some(format!(
             "{:02}",
             t.tag.track().unwrap_or_default()
-        ))),
-    ]);
+        )),
+    );
 
     Ok(formatters.to_format_pieces(tmpl)?)
 }

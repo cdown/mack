@@ -276,11 +276,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "funcfmt"
-version = "0.2.0"
+name = "fnv"
+version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "439f5e50ee56cb7f2269e4e2938cb58319b417c4e8d5b0efdada2dd94f9b3595"
+checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
+
+[[package]]
+name = "funcfmt"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0e6db9acd7d06c3e871fcb6d232710e16e62c1be4db0922598c111f1e1ab30c2"
 dependencies = [
+ "fnv",
+ "smallvec",
  "smartstring",
  "thiserror",
 ]
@@ -495,6 +503,12 @@ name = "scopeguard"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
+
+[[package]]
+name = "smallvec"
+version = "1.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
 
 [[package]]
 name = "smartstring"
