@@ -16,7 +16,7 @@ clap = { version = "4.2.4", features = ["derive"] }
 regex = "1.8.1"
 anyhow = "1.0.70"
 id3 = { version = "1.7.0", default-features = false }
-funcfmt = "0.2.0"
+funcfmt = "0.3.0"
 once_cell = "1.17.1"
 cow-utils = "0.1.2"
 rayon = "1.7.0"
