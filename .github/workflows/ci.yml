@@ -12,8 +12,8 @@ jobs:
 
       - run: cargo fmt --all -- --check
       - run: cargo clippy --all-targets -- -D warnings
-      - run: cargo test --release --all-features --all
-      - run: cargo build --release --all-features
+      - run: cargo test --all-features --all
+      - run: cargo build --all-features
 
 on:
   push:
