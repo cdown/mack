@@ -259,7 +259,7 @@ checksum = "edc207893e85c5d6be840e969b496b53d94cec8be2d501b214f50daa97fa8024"
 
 [[package]]
 name = "mack"
-version = "1.3.2"
+version = "1.4.0"
 dependencies = [
  "anyhow",
  "clap",
