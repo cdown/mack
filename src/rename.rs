@@ -1,6 +1,8 @@
 use crate::types::Track;
 use anyhow::{Context, Result};
 use funcfmt::{FormatPieces, Render};
+use once_cell::sync::Lazy;
+use regex::Regex;
 use std::ffi::{OsStr, OsString};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -37,8 +39,10 @@ fn safe_truncate(s: &mut String, max_chars: usize) {
 // Arbitrary limit on path part without extension to try to avoid brushing against PATH_MAX. We
 // can't just check PATH_MAX and similar, because we also want to avoid issues when copying
 // elsewhere later.
+static MULTI_DOT_RE: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"\.\.+"#).expect("BUG: Invalid regex"));
 const MAX_PATH_PART_LEN: usize = 64;
-fn truncate_dirs(path_part: String) -> PathBuf {
+fn normalise_dirs(path_part: String) -> PathBuf {
     let partial = PathBuf::from(path_part);
     partial
         .components()
@@ -49,7 +53,12 @@ fn truncate_dirs(path_part: String) -> PathBuf {
                 .into_string()
                 .expect("invalid path");
             safe_truncate(&mut s, MAX_PATH_PART_LEN);
-            s
+
+            // exfat normalises this and it confuses adb-sync and other tooling
+            s = MULTI_DOT_RE.replace_all(&s, ".").to_string();
+
+            // If it's the last one, it's gonna end up doubled up with the extension
+            s.trim_end_matches('.').to_string()
         })
         .collect()
 }
@@ -68,7 +77,7 @@ pub fn rename_track(
     dry_run: bool,
 ) -> Result<Option<PathBuf>> {
     let mut new_path = output_path.to_path_buf();
-    let partial = truncate_dirs(fp.render(track)?);
+    let partial = normalise_dirs(fp.render(track)?);
     new_path.push(partial);
 
     // We might have truncated and have a dot elsewhere, so we can't use set_extension
