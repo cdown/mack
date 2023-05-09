@@ -63,5 +63,5 @@ pub struct Config {
     pub fmt: String,
 
     #[arg(help = "Directories to find music files in.")]
-    pub paths: Vec<PathBuf>,
+    pub paths: Option<Vec<PathBuf>>,
 }

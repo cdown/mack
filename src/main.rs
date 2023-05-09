@@ -153,12 +153,11 @@ fn fix_all_tracks(cfg: &types::Config, base_path: &PathBuf, output_path: &Path) 
 }
 
 fn main() {
-    let cfg = types::Config::parse();
+    let mut cfg = types::Config::parse();
 
-    let paths = if cfg.paths.is_empty() {
-        vec![PathBuf::from(".")]
-    } else {
-        cfg.paths.clone()
+    let paths = match cfg.paths.take() {
+        Some(paths) => paths,
+        None => vec![PathBuf::from(".")],
     };
 
     for path in paths {
