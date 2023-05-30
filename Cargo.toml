@@ -17,7 +17,7 @@ regex = "1.8.3"
 anyhow = "1.0.71"
 id3 = { version = "1.7.0", default-features = false }
 funcfmt = "0.3.0"
-once_cell = { default-features = false, version = "1.17.1" }
+once_cell = { default-features = false, version = "1.17.2" }
 cow-utils = "0.1.2"
 rayon = "1.7.0"
 jwalk = "0.8.1"
