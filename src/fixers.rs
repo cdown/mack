@@ -1,8 +1,8 @@
 use crate::extract::extract_feat;
 use crate::types::{Track, TrackFeat};
-use anyhow::{bail, Result};
+use anyhow::Result;
+use audiotags::AudioTag;
 use cow_utils::CowUtils;
-use id3::{Tag, TagLike, Version};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -15,7 +15,7 @@ pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool> {
 
     let new_title = fix_title(tags.title(), tags.artist());
     let new_artist = fix_artist(tags.artist());
-    let new_album = fix_album(tags.album());
+    let new_album = fix_album(tags.album_title());
     let mut changed = false;
 
     if let Some(new_artist) = new_artist {
@@ -28,11 +28,11 @@ pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool> {
     }
     if let Some(new_album) = new_album {
         changed = true;
-        tags.set_album(&new_album);
+        tags.set_album_title(&new_album);
     }
 
     if !dry_run && changed {
-        tags.write_to_path(&track.path, Version::Id3v24)?;
+        tags.write_to_path(track.path.to_str().unwrap())?;
     }
 
     Ok(changed)
@@ -127,12 +127,13 @@ fn make_feat_string(featured_artists: &[String]) -> String {
     output
 }
 
-fn fixer_is_blacklisted(tags: &Tag) -> Result<()> {
-    for comment in tags.comments() {
-        if comment.text.contains("_NO_MACK") {
-            bail!("Comment contains _NO_MACK");
-        }
-    }
+fn fixer_is_blacklisted(_tags: &Box<(dyn AudioTag + 'static)>) -> Result<()> {
+    //TODO
+    // for comment in tags.comments() {
+    //     if comment.text.contains("_NO_MACK") {
+    //         bail!("Comment contains _NO_MACK");
+    //     }
+    // }
     Ok(())
 }
 
