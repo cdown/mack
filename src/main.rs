@@ -8,7 +8,6 @@ mod types;
 use anyhow::Result;
 use clap::Parser;
 use funcfmt::{fm, FormatMap, FormatPieces, ToFormatPieces};
-use id3::TagLike;
 use jwalk::WalkDir;
 use rayon::prelude::*;
 use std::ffi::OsStr;
@@ -34,7 +33,7 @@ fn print_updated_tags(track: &types::Track) {
         "{}: updated tags: artist: '{}', album: '{}', title: '{}'",
         track.path.display(),
         track.tag.artist().unwrap_or_default(),
-        track.tag.album().unwrap_or_default(),
+        track.tag.album_title().unwrap_or_default(),
         track.tag.title().unwrap_or_default()
     );
 }
@@ -82,14 +81,14 @@ fn get_format_pieces(tmpl: &str) -> Result<funcfmt::FormatPieces<types::Track>> 
             t.tag.artist().unwrap_or("Unknown Artist")
         )),
         "album" => |t: &types::Track| Some(clean_part(
-            t.tag.album().unwrap_or("Unknown Album")
+            t.tag.album_title().unwrap_or("Unknown Album")
         )),
         "title" => |t: &types::Track| Some(clean_part(
             t.tag.title().unwrap_or("Unknown Title")
         )),
         "track" => |t: &types::Track| Some(format!(
             "{:02}",
-            t.tag.track().unwrap_or_default()
+            t.tag.track_number().unwrap_or_default()
         )),
     );
 
