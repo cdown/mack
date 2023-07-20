@@ -1,10 +1,10 @@
+use audiotags::AudioTag;
 use clap::Parser;
-use id3::Tag;
 use std::path::PathBuf;
 
 pub struct Track {
     pub path: PathBuf,
-    pub tag: Tag,
+    pub tag: Box<dyn AudioTag>,
 }
 
 #[derive(Debug, PartialEq, Eq)]

@@ -15,12 +15,12 @@ rust-version = "1.65.0"
 clap = { version = "4.3.11", features = ["std", "derive", "help"], default-features = false }
 regex = "1.9.1"
 anyhow = "1.0.71"
-id3 = { version = "1.7.0", default-features = false }
 funcfmt = "0.3.0"
 once_cell = { default-features = false, version = "1.18.0" }
 cow-utils = "0.1.2"
 rayon = "1.7.0"
 jwalk = "0.8.1"
+audiotags = "0.4.1"
 
 [target.'cfg(target_family = "unix")'.dependencies]
 libc = "0.2.147"
