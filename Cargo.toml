@@ -14,7 +14,7 @@ rust-version = "1.65.0"
 [dependencies]
 clap = { version = "4.3.11", features = ["std", "derive", "help"], default-features = false }
 regex = "1.9.1"
-anyhow = "1.0.71"
+anyhow = "1.0.74"
 id3 = { version = "1.7.0", default-features = false }
 funcfmt = "0.3.0"
 once_cell = { default-features = false, version = "1.18.0" }
