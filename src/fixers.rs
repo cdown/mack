@@ -6,8 +6,7 @@ use id3::{Tag, TagLike, Version};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
-static MULTI_WS_RE: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r#"[ \t]+"#).expect("BUG: Invalid regex"));
+static MULTI_WS_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"[ \t]+").expect("BUG: Invalid regex"));
 
 pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool> {
     let tags = &mut track.tag;

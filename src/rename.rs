@@ -39,8 +39,7 @@ fn safe_truncate(s: &mut String, max_chars: usize) {
 // Arbitrary limit on path part without extension to try to avoid brushing against PATH_MAX. We
 // can't just check PATH_MAX and similar, because we also want to avoid issues when copying
 // elsewhere later.
-static MULTI_DOT_RE: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r#"\.\.+"#).expect("BUG: Invalid regex"));
+static MULTI_DOT_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\.\.+").expect("BUG: Invalid regex"));
 const MAX_PATH_PART_LEN: usize = 64;
 fn normalise_dirs(path_part: String) -> PathBuf {
     let partial = PathBuf::from(path_part);
