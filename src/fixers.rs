@@ -66,7 +66,9 @@ fn fix_artist(old_artist: Option<&str>) -> Option<String> {
 }
 
 fn fix_album(old_album: Option<&str>) -> Option<String> {
-    let Some(old_album) = old_album else { return None };
+    let Some(old_album) = old_album else {
+        return None;
+    };
     let new_album = normalise_field(old_album);
 
     if new_album == old_album {
@@ -77,7 +79,9 @@ fn fix_album(old_album: Option<&str>) -> Option<String> {
 }
 
 fn fix_title(old_title: Option<&str>, old_artist: Option<&str>) -> Option<String> {
-    let Some(old_title) = old_title else { return None };
+    let Some(old_title) = old_title else {
+        return None;
+    };
     let old_title = extract_feat(old_title);
     let old_artist = extract_feat(old_artist.unwrap_or_default());
     let new_title = make_title(&old_title, old_artist);
