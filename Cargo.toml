@@ -23,7 +23,7 @@ rayon = "1.8.0"
 jwalk = "0.8.1"
 
 [target.'cfg(target_family = "unix")'.dependencies]
-libc = "0.2.149"
+libc = "0.2.150"
 
 [target.'cfg(target_family = "windows")'.dependencies]
 winapi = { version = "0.3.9", features = ["winerror"] }
