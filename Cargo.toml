@@ -1,6 +1,6 @@
 [package]
 name = "mack"
-version = "1.4.0"
+version = "1.4.1"
 edition = "2021"
 authors = ["Chris Down <chris@chrisdown.name>"]
 description = "An opinionated, fast music organiser."
