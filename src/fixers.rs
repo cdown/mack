@@ -2,20 +2,19 @@ use crate::extract::extract_feat;
 use crate::types::{Track, TrackFeat};
 use anyhow::{bail, Result};
 use cow_utils::CowUtils;
-use id3::{Tag, TagLike, Version};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
 static MULTI_WS_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"[ \t]+").expect("BUG: Invalid regex"));
 
 pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool> {
-    let tags = &mut track.tag;
+    fixer_is_blacklisted(track)?;
 
-    fixer_is_blacklisted(tags)?;
+    let tags = &mut track.tag;
 
     let new_title = fix_title(tags.title(), tags.artist());
     let new_artist = fix_artist(tags.artist());
-    let new_album = fix_album(tags.album());
+    let new_album = fix_album(tags.album_title());
     let mut changed = false;
 
     if let Some(new_artist) = new_artist {
@@ -28,11 +27,11 @@ pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool> {
     }
     if let Some(new_album) = new_album {
         changed = true;
-        tags.set_album(&new_album);
+        tags.set_album_title(&new_album);
     }
 
     if !dry_run && changed {
-        tags.write_to_path(&track.path, Version::Id3v24)?;
+        tags.write_to_path(track.path.to_str().unwrap())?;
     }
 
     Ok(changed)
@@ -127,12 +126,13 @@ fn make_feat_string(featured_artists: &[String]) -> String {
     output
 }
 
-fn fixer_is_blacklisted(tags: &Tag) -> Result<()> {
-    for comment in tags.comments() {
-        if comment.text.contains("_NO_MACK") {
+fn fixer_is_blacklisted(track: &mut Track) -> Result<()> {
+    if let Some(comment) = track.tag.comment() {
+        if comment.contains("_NO_MACK") {
             bail!("Comment contains _NO_MACK");
         }
     }
+
     Ok(())
 }
 
