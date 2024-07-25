@@ -1,6 +1,6 @@
 use crate::extract::extract_feat;
 use crate::types::{Track, TrackFeat};
-use anyhow::Result;
+use anyhow::{bail, Result};
 use audiotags::AudioTag;
 use cow_utils::CowUtils;
 use once_cell::sync::Lazy;
@@ -127,13 +127,13 @@ fn make_feat_string(featured_artists: &[String]) -> String {
     output
 }
 
-fn fixer_is_blacklisted(_tags: &Box<(dyn AudioTag + 'static)>) -> Result<()> {
-    //TODO
-    // for comment in tags.comments() {
-    //     if comment.text.contains("_NO_MACK") {
-    //         bail!("Comment contains _NO_MACK");
-    //     }
-    // }
+fn fixer_is_blacklisted(tags: &Box<(dyn AudioTag + 'static)>) -> Result<()> {
+    if let Some(comment) = tags.comment() {
+        if comment.contains("_NO_MACK") {
+            bail!("Comment contains _NO_MACK");
+        }
+    }
+
     Ok(())
 }
 
