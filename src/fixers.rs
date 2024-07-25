@@ -1,7 +1,6 @@
 use crate::extract::extract_feat;
 use crate::types::{Track, TrackFeat};
 use anyhow::{bail, Result};
-use audiotags::AudioTag;
 use cow_utils::CowUtils;
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -9,9 +8,9 @@ use regex::Regex;
 static MULTI_WS_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"[ \t]+").expect("BUG: Invalid regex"));
 
 pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool> {
-    let tags = &mut track.tag;
+    fixer_is_blacklisted(track)?;
 
-    fixer_is_blacklisted(tags)?;
+    let tags = &mut track.tag;
 
     let new_title = fix_title(tags.title(), tags.artist());
     let new_artist = fix_artist(tags.artist());
@@ -127,8 +126,8 @@ fn make_feat_string(featured_artists: &[String]) -> String {
     output
 }
 
-fn fixer_is_blacklisted(tags: &Box<(dyn AudioTag + 'static)>) -> Result<()> {
-    if let Some(comment) = tags.comment() {
+fn fixer_is_blacklisted(track: &mut Track) -> Result<()> {
+    if let Some(comment) = track.tag.comment() {
         if comment.contains("_NO_MACK") {
             bail!("Comment contains _NO_MACK");
         }
