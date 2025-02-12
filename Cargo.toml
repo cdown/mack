@@ -12,7 +12,7 @@ license = "MIT"
 rust-version = "1.74"
 
 [dependencies]
-clap = { version = "4.5.21", features = ["std", "derive", "help"], default-features = false }
+clap = { version = "4.5.29", features = ["std", "derive", "help"], default-features = false }
 regex = "1.11.1"
 anyhow = "1.0.93"
 id3 = { version = "1.15.0", default-features = false }
