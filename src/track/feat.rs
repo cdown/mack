@@ -1,4 +1,3 @@
-use crate::types::TrackFeat;
 use once_cell::sync::Lazy;
 use regex::{Regex, RegexBuilder};
 
@@ -14,6 +13,15 @@ static FEAT_RE: Lazy<Regex> = Lazy::new(|| {
 static FEAT_ARTIST_SPLIT: Lazy<Regex> =
     Lazy::new(|| Regex::new(r#", (?:and |& )?"#).expect("BUG: Invalid regex"));
 
+/// Represents a track's title after extracting featured artists.
+#[derive(Debug, PartialEq, Eq)]
+pub struct TrackFeat {
+    pub title: String,
+    pub featured_artists: Vec<String>,
+    pub original_title: String,
+}
+
+/// Extracts featured artist information from a track title.
 pub fn extract_feat(title: &str) -> TrackFeat {
     if let Some(caps) = FEAT_RE.captures(title) {
         let trimmed = caps["feat_artists"].trim();
