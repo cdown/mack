@@ -1,13 +1,10 @@
-mod extract;
-mod fixers;
+mod config;
 mod mtime;
-mod rename;
 mod track;
-mod types;
 
 use anyhow::Result;
 use clap::Parser;
-use funcfmt::{fm, FormatMap, FormatPieces, ToFormatPieces};
+use funcfmt::{fm, FormatPieces, ToFormatPieces};
 use id3::TagLike;
 use jwalk::WalkDir;
 use rayon::prelude::*;
@@ -15,10 +12,13 @@ use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
+use config::Config;
+use track::{get_track, Track};
+
 const ALLOWED_EXTS: &[&str] = &["mp3", "flac", "m4a"];
 
-fn fix_track(track: &mut types::Track, dry_run: bool) {
-    let fix_results = fixers::run_fixers(track, dry_run);
+fn fix_track(track: &mut Track, dry_run: bool) {
+    let fix_results = track::fixers::run_fixers(track, dry_run);
     match fix_results {
         Ok(applied_fixers) => {
             if applied_fixers {
@@ -29,7 +29,7 @@ fn fix_track(track: &mut types::Track, dry_run: bool) {
     }
 }
 
-fn print_updated_tags(track: &types::Track) {
+fn print_updated_tags(track: &Track) {
     println!(
         "{}: updated tags: artist: '{}', album: '{}', title: '{}'",
         track.path.display(),
@@ -39,13 +39,8 @@ fn print_updated_tags(track: &types::Track) {
     );
 }
 
-fn rename_track(
-    track: &types::Track,
-    fp: &FormatPieces<types::Track>,
-    output_path: &Path,
-    dry_run: bool,
-) {
-    let new_path = rename::rename_track(track, fp, output_path, dry_run);
+fn rename_track(track: &Track, fp: &FormatPieces<Track>, output_path: &Path, dry_run: bool) {
+    let new_path = track::rename::rename_track(track, fp, output_path, dry_run);
 
     match new_path {
         Ok(Some(new_path)) => println!(
@@ -73,21 +68,12 @@ fn clean_part(path_part: &str) -> String {
         .collect()
 }
 
-fn get_format_pieces(tmpl: &str) -> Result<funcfmt::FormatPieces<types::Track>> {
-    let formatters: FormatMap<types::Track> = fm!(
-        "artist" => |t: &types::Track| Some(clean_part(
-            t.tag.artist().unwrap_or("Unknown Artist")
-        )),
-        "album" => |t: &types::Track| Some(clean_part(
-            t.tag.album().unwrap_or("Unknown Album")
-        )),
-        "title" => |t: &types::Track| Some(clean_part(
-            t.tag.title().unwrap_or("Unknown Title")
-        )),
-        "track" => |t: &types::Track| Some(format!(
-            "{:02}",
-            t.tag.track().unwrap_or_default()
-        )),
+fn get_format_pieces(tmpl: &str) -> Result<funcfmt::FormatPieces<Track>> {
+    let formatters = fm!(
+        "artist" => |t: &Track| Some(clean_part(t.tag.artist().unwrap_or("Unknown Artist"))),
+        "album" => |t: &Track| Some(clean_part(t.tag.album().unwrap_or("Unknown Album"))),
+        "title" => |t: &Track| Some(clean_part(t.tag.title().unwrap_or("Unknown Title"))),
+        "track" => |t: &Track| Some(format!("{:02}", t.tag.track().unwrap_or_default())),
     );
 
     Ok(formatters.to_format_pieces(tmpl)?)
@@ -97,7 +83,7 @@ fn is_updated_since_last_run(path: &PathBuf, last_run_time: SystemTime) -> bool 
     mtime::mtime_def_now(path) > last_run_time
 }
 
-fn fix_all_tracks(cfg: &types::Config, base_path: &PathBuf, output_path: &Path) {
+fn fix_all_tracks(cfg: &Config, base_path: &PathBuf, output_path: &Path) {
     // If the output path is different, we don't know if we should run or not, so just do them all
     let last_run_time = if output_path == base_path {
         mtime::get_last_run_time(base_path).unwrap_or(SystemTime::UNIX_EPOCH)
@@ -130,7 +116,7 @@ fn fix_all_tracks(cfg: &types::Config, base_path: &PathBuf, output_path: &Path) 
         .filter(|e| cfg.force || is_updated_since_last_run(e, last_run_time))
         .collect::<Vec<_>>()
         .into_par_iter()
-        .for_each(|path| match track::get_track(path.clone()) {
+        .for_each(|path| match get_track(path.clone()) {
             Ok(mut track) => {
                 fix_track(&mut track, cfg.dry_run);
                 rename_track(&track, &fp, output_path, cfg.dry_run);
@@ -150,7 +136,7 @@ fn fix_all_tracks(cfg: &types::Config, base_path: &PathBuf, output_path: &Path) 
 }
 
 fn main() {
-    let mut cfg = types::Config::parse();
+    let mut cfg = Config::parse();
 
     let paths = cfg.paths.take().unwrap_or_else(|| vec![PathBuf::from(".")]);
 

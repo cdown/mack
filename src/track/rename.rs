@@ -1,4 +1,4 @@
-use crate::types::Track;
+use crate::track::Track;
 use anyhow::{Context, Result};
 use funcfmt::{FormatPieces, Render};
 use once_cell::sync::Lazy;

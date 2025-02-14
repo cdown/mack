@@ -1,4 +1,4 @@
-use crate::types::Track;
+use crate::track::Track;
 use anyhow::Result;
 use id3::Tag;
 use std::path::PathBuf;

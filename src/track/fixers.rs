@@ -1,5 +1,5 @@
-use crate::extract::extract_feat;
-use crate::types::{Track, TrackFeat};
+use crate::track::feat::{extract_feat, TrackFeat};
+use crate::track::Track;
 use anyhow::{bail, Result};
 use cow_utils::CowUtils;
 use id3::{Tag, TagLike, Version};
