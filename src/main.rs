@@ -116,7 +116,7 @@ fn fix_all_tracks(cfg: &types::Config, base_path: &PathBuf, output_path: &Path) 
 
     WalkDir::new(base_path)
         .into_iter()
-        .filter_map(std::result::Result::ok)
+        .filter_map(Result::ok)
         .filter(|e| e.file_type().is_file())
         .map(|e| e.path())
         .filter(|e| {
