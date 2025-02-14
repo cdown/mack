@@ -41,11 +41,9 @@ pub fn run_fixers(track: &mut Track, dry_run: bool) -> Result<bool> {
 // False positive: https://github.com/rust-lang/rust-clippy/issues/12444
 #[allow(clippy::assigning_clones)]
 fn normalise_field(field: &str) -> String {
-    let mut new_field = field.to_owned();
-
-    new_field = MULTI_WS_RE.replace_all(&new_field, " ").to_string();
-    new_field = new_field.trim().to_owned();
-    new_field
+    let normalized = MULTI_WS_RE.replace_all(field, " ").to_string();
+    let trimmed = normalized.trim().to_owned();
+    trimmed
         .cow_replace('[', "(")
         .cow_replace(']', ")")
         .cow_replace('…', "...")
@@ -79,11 +77,11 @@ fn fix_album(old_album: Option<&str>) -> Option<String> {
 
 fn fix_title(old_title: Option<&str>, old_artist: Option<&str>) -> Option<String> {
     let old_title = old_title?;
-    let old_title = extract_feat(old_title);
-    let old_artist = extract_feat(old_artist.unwrap_or_default());
-    let new_title = make_title(&old_title, old_artist);
+    let title_feat = extract_feat(old_title);
+    let artist_feat = extract_feat(old_artist.unwrap_or_default());
+    let new_title = make_title(&title_feat, artist_feat);
 
-    if new_title == old_title.original_title {
+    if new_title == title_feat.original_title {
         None
     } else {
         Some(new_title)
@@ -105,26 +103,16 @@ fn make_title(title: &TrackFeat, artist: TrackFeat) -> String {
 }
 
 fn make_feat_string(featured_artists: &[String]) -> String {
-    let mut output = String::new();
-    let mut artist_idx = 1i32;
-
-    let mut artists = featured_artists.iter().peekable();
-
-    while let Some(artist) = artists.next() {
-        let is_last = artists.peek().is_none();
-
-        if is_last && artist_idx > 2 {
-            output.push_str(", and ");
-        } else if is_last && artist_idx == 2 {
-            output.push_str(" and ");
-        } else if artist_idx != 1 {
-            output.push_str(", ");
+    match featured_artists.len() {
+        0 => String::new(),
+        1 => featured_artists[0].clone(),
+        2 => format!("{} and {}", featured_artists[0], featured_artists[1]),
+        _ => {
+            let head = &featured_artists[..featured_artists.len() - 1];
+            let last = &featured_artists[featured_artists.len() - 1];
+            format!("{}, and {}", head.join(", "), last)
         }
-        output.push_str(artist);
-        artist_idx = artist_idx.checked_add(1).expect("overflow");
     }
-
-    output
 }
 
 fn fixer_is_blacklisted(tags: &Tag) -> Result<()> {
