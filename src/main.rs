@@ -152,20 +152,10 @@ fn fix_all_tracks(cfg: &types::Config, base_path: &PathBuf, output_path: &Path) 
 fn main() {
     let mut cfg = types::Config::parse();
 
-    let paths = match cfg.paths.take() {
-        Some(paths) => paths,
-        None => vec![PathBuf::from(".")],
-    };
+    let paths = cfg.paths.take().unwrap_or_else(|| vec![PathBuf::from(".")]);
 
     for path in paths {
-        let this_output_path;
-
-        if let Some(op) = cfg.output_dir.clone() {
-            this_output_path = op;
-        } else {
-            this_output_path = path.clone();
-        }
-
-        fix_all_tracks(&cfg, &path, &this_output_path);
+        let output_path = cfg.output_dir.clone().unwrap_or_else(|| path.clone());
+        fix_all_tracks(&cfg, &path, &output_path);
     }
 }
