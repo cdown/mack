@@ -1,18 +1,3 @@
-use once_cell::sync::Lazy;
-use regex::{Regex, RegexBuilder};
-
-const AMP_SPLITS: &[&str] = &[" & ", " and "];
-
-static FEAT_RE: Lazy<Regex> = Lazy::new(|| {
-    RegexBuilder::new(r" [(\[]?(f(ea)?t[a-z]*\.?|f\.) (?P<feat_artists>[^)\]]+)[)\]]?")
-        .case_insensitive(true)
-        .build()
-        .expect("BUG: Invalid regex")
-});
-
-static FEAT_ARTIST_SPLIT: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r#", (?:and |& )?"#).expect("BUG: Invalid regex"));
-
 /// Represents a track's title after extracting featured artists.
 #[derive(Debug, PartialEq, Eq)]
 pub struct TrackFeat {
@@ -21,47 +6,131 @@ pub struct TrackFeat {
     pub original_title: String,
 }
 
+/// Holds the indices and inner content of a bracketed feature section.
+struct BracketedFeat<'a> {
+    open_idx: usize,
+    close_idx: usize,
+    content: &'a str,
+}
+
 /// Extracts featured artist information from a track title.
 pub fn extract_feat(title: &str) -> TrackFeat {
-    if let Some(caps) = FEAT_RE.captures(title) {
-        let trimmed = caps["feat_artists"].trim();
-        let mut feat_artists: Vec<String> = FEAT_ARTIST_SPLIT
-            .split(trimmed)
-            .map(ToOwned::to_owned)
-            .collect();
-        let last_artist = feat_artists
-            .last()
-            .expect("BUG: captured, but no featured artists");
+    let feat_keywords = ["feat", "ft", "f.", "featuring"];
 
-        // If the last artist contains an "&", we'll split on it, even without a comma. This
-        // isn't perfect, but is mostly right.
-        for amp_split in AMP_SPLITS {
-            if last_artist.contains(amp_split) {
-                let mut tmp_last_split: Vec<String> = last_artist
-                    .rsplitn(2, amp_split)
-                    .map(ToOwned::to_owned)
-                    .collect();
-                tmp_last_split.reverse();
-                feat_artists.pop();
-                feat_artists.append(&mut tmp_last_split);
-                break;
+    if let Some(bf) = find_bracketed_feat(title, &feat_keywords) {
+        let artist_part = remove_keyword_from_content(bf.content, &feat_keywords);
+        let featured_artists = split_artists(artist_part);
+        let base_title = format!(
+            "{} {}",
+            &title[..bf.open_idx].trim_end(),
+            &title[bf.close_idx + 1..].trim_start()
+        )
+        .trim()
+        .to_string();
+
+        return TrackFeat {
+            title: base_title,
+            featured_artists,
+            original_title: title.to_string(),
+        };
+    }
+
+    if let Some(pos) = find_non_bracketed_feat(title, &feat_keywords) {
+        let inner = &title[pos..].trim();
+        let artist_part = remove_keyword_from_content(inner, &feat_keywords);
+        let featured_artists = split_artists(artist_part);
+        let base_title = title[..pos].trim_end().to_string();
+        return TrackFeat {
+            title: base_title,
+            featured_artists,
+            original_title: title.to_string(),
+        };
+    }
+
+    // No feature found, return as is
+    TrackFeat {
+        title: title.to_string(),
+        featured_artists: Vec::new(),
+        original_title: title.to_string(),
+    }
+}
+
+/// Searches for a bracketed section (using '(' or '[') whose inner content, when trimmed
+/// and lowercased, starts with one of the specified keywords. If found, returns a `BracketedFeat`
+/// containing the opening index, closing index, and the inner content.
+fn find_bracketed_feat<'a>(title: &'a str, keywords: &[&str]) -> Option<BracketedFeat<'a>> {
+    let mut chars = title.char_indices().peekable();
+    while let Some((i, ch)) = chars.next() {
+        if ch == '(' || ch == '[' {
+            let closing = if ch == '(' { ')' } else { ']' };
+            let mut depth = 1;
+            let mut j = i;
+            for (k, ch2) in chars.by_ref() {
+                if ch2 == ch {
+                    depth += 1;
+                } else if ch2 == closing {
+                    depth -= 1;
+                    if depth == 0 {
+                        j = k;
+                        break;
+                    }
+                }
+            }
+            if depth == 0 {
+                // Get the inner content (without the brackets).
+                let content = &title[i + ch.len_utf8()..j];
+                if keywords
+                    .iter()
+                    .any(|&kw| content.trim().to_lowercase().starts_with(kw))
+                {
+                    return Some(BracketedFeat {
+                        open_idx: i,
+                        close_idx: j,
+                        content,
+                    });
+                }
             }
         }
+    }
+    None
+}
 
-        let featless_title = FEAT_RE.replace_all(title, "").trim().to_owned();
-        TrackFeat {
-            title: featless_title,
-            featured_artists: feat_artists,
-            original_title: title.to_string(),
+/// Searches for a non-bracketed occurrence of any feature keyword (case–insensitively)
+/// in the title. Returns the earliest index if found.
+fn find_non_bracketed_feat(title: &str, keywords: &[&str]) -> Option<usize> {
+    let lower = title.to_lowercase();
+    keywords.iter().filter_map(|&kw| lower.find(kw)).min()
+}
+
+/// Given some content (either from inside a bracket or not) that starts with a feature keyword,
+/// remove that keyword (choosing the longest matching one) and any immediately following period.
+fn remove_keyword_from_content<'a>(content: &'a str, keywords: &[&str]) -> &'a str {
+    let trimmed = content.trim();
+    let lower = trimmed.to_lowercase();
+    if let Some(&kw) = keywords
+        .iter()
+        .filter(|&&k| lower.starts_with(k))
+        .max_by_key(|k| k.len())
+    {
+        let after = trimmed.get(kw.len()..).unwrap_or("").trim_start();
+        if let Some(rest) = after.strip_prefix('.') {
+            rest.trim_start()
+        } else {
+            after
         }
     } else {
-        // There's no "feat" in here, just return the title whole
-        TrackFeat {
-            title: title.to_string(),
-            featured_artists: Vec::new(),
-            original_title: title.to_string(),
-        }
+        trimmed
     }
+}
+
+fn split_artists(artists_str: &str) -> Vec<String> {
+    artists_str
+        .split(',')
+        .flat_map(|s| s.split(" and ").flat_map(|s| s.split(" & ")))
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+        .map(String::from)
+        .collect()
 }
 
 #[cfg(test)]
@@ -140,5 +209,19 @@ mod tests {
             original_title: given.clone(),
         };
         assert_eq!(extract_feat(&given), expected);
+    }
+
+    #[test]
+    fn test_extract_feat_nested_parentheses() {
+        let given = "比較大的大提琴 [Featuring Lara Veronin (梁心頤) & Gary Yang (楊瑞代)]";
+        let expected = TrackFeat {
+            title: "比較大的大提琴".to_string(),
+            featured_artists: vec![
+                "Lara Veronin (梁心頤)".to_string(),
+                "Gary Yang (楊瑞代)".to_string(),
+            ],
+            original_title: given.to_string(),
+        };
+        assert_eq!(extract_feat(given), expected);
     }
 }
