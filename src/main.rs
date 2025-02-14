@@ -64,10 +64,7 @@ fn clean_part(path_part: &str) -> String {
     path_part
         .chars()
         .map(|c| {
-            if c.is_alphanumeric()
-                || c.is_whitespace()
-                || ADDITIONAL_ACCEPTED_CHARS.iter().any(|&a| a == c)
-            {
+            if c.is_alphanumeric() || c.is_whitespace() || ADDITIONAL_ACCEPTED_CHARS.contains(&c) {
                 c
             } else {
                 '_'
