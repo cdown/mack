@@ -101,6 +101,7 @@ fn fix_all_tracks(cfg: &Config, base_path: &PathBuf, output_path: &Path) {
     };
 
     WalkDir::new(base_path)
+        .skip_hidden(false)
         .into_iter()
         .filter_map(Result::ok)
         .filter(|e| e.file_type().is_file())
