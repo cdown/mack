@@ -40,6 +40,10 @@ fn safe_truncate(s: &mut String, max_chars: usize) {
 // can't just check PATH_MAX and similar, because we also want to avoid issues when copying
 // elsewhere later.
 static MULTI_DOT_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\.\.+").expect("BUG: Invalid regex"));
+// Illegal characters for Windows filenames, except for / and \ which are path separators and
+// handled by `components()`.
+static ILLEGAL_CHARS_RE: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"[<>:"|?*]"#).expect("BUG: Invalid regex"));
 const MAX_PATH_PART_LEN: usize = 64;
 fn normalise_dirs(path_part: String) -> PathBuf {
     let partial = PathBuf::from(path_part);
@@ -53,11 +57,25 @@ fn normalise_dirs(path_part: String) -> PathBuf {
                 .expect("invalid path");
             safe_truncate(&mut s, MAX_PATH_PART_LEN);
 
+            // Replace illegal characters with underscores.
+            s = ILLEGAL_CHARS_RE.replace_all(&s, "_").to_string();
+
+            // Trim leading/trailing whitespace, which can be problematic on some filesystems.
+            s = s.trim().to_string();
+
             // exfat normalises this and it confuses adb-sync and other tooling
             s = MULTI_DOT_RE.replace_all(&s, ".").to_string();
 
-            // If it's the last one, it's gonna end up doubled up with the extension
-            s.trim_end_matches('.').to_string()
+            // Disallow leading dots to prevent creating hidden files/directories.
+            // Disallow trailing dots as they are invalid on Windows.
+            let s = s.trim_matches('.').to_string();
+
+            // If the component is now empty (e.g. it was just "."), use a placeholder.
+            if s.is_empty() {
+                "_".to_string()
+            } else {
+                s
+            }
         })
         .collect()
 }
