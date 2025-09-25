@@ -1,3 +1,8 @@
+use once_cell::sync::Lazy;
+use regex::Regex;
+
+const FEAT_KEYWORDS: &[&str] = &["feat", "ft", "f.", "featuring"];
+
 /// Represents a track's title after extracting featured artists.
 #[derive(Debug, PartialEq, Eq)]
 pub struct TrackFeat {
@@ -15,10 +20,8 @@ struct BracketedFeat<'a> {
 
 /// Extracts featured artist information from a track title.
 pub fn extract_feat(title: &str) -> TrackFeat {
-    let feat_keywords = ["feat", "ft", "f.", "featuring"];
-
-    if let Some(bf) = find_bracketed_feat(title, &feat_keywords) {
-        let artist_part = remove_keyword_from_content(bf.content, &feat_keywords);
+    if let Some(bf) = find_bracketed_feat(title, FEAT_KEYWORDS) {
+        let artist_part = remove_keyword_from_content(bf.content, FEAT_KEYWORDS);
         let featured_artists = split_artists(artist_part);
         let base_title = format!(
             "{} {}",
@@ -35,9 +38,9 @@ pub fn extract_feat(title: &str) -> TrackFeat {
         };
     }
 
-    if let Some(pos) = find_non_bracketed_feat(title, &feat_keywords) {
+    if let Some(pos) = find_non_bracketed_feat(title) {
         let inner = &title[pos..].trim();
-        let artist_part = remove_keyword_from_content(inner, &feat_keywords);
+        let artist_part = remove_keyword_from_content(inner, FEAT_KEYWORDS);
         let featured_artists = split_artists(artist_part);
         let base_title = title[..pos].trim_end().to_string();
         return TrackFeat {
@@ -97,9 +100,19 @@ fn find_bracketed_feat<'a>(title: &'a str, keywords: &[&str]) -> Option<Brackete
 
 /// Searches for a non-bracketed occurrence of any feature keyword (case–insensitively)
 /// in the title. Returns the earliest index if found.
-fn find_non_bracketed_feat(title: &str, keywords: &[&str]) -> Option<usize> {
-    let lower = title.to_lowercase();
-    keywords.iter().filter_map(|&kw| lower.find(kw)).min()
+fn find_non_bracketed_feat(title: &str) -> Option<usize> {
+    static FEAT_RE: Lazy<Regex> = Lazy::new(|| {
+        let escaped_keywords: Vec<String> =
+            FEAT_KEYWORDS.iter().map(|&s| regex::escape(s)).collect();
+
+        let pattern = format!(r"(?i)(?:^|\W)({})(:?$|\W)", escaped_keywords.join("|"));
+        Regex::new(&pattern).expect("BUG: Invalid feat regex")
+    });
+
+    FEAT_RE
+        .captures(title)
+        .and_then(|caps| caps.get(1))
+        .map(|m| m.start())
 }
 
 /// Given some content (either from inside a bracket or not) that starts with a feature keyword,
@@ -140,6 +153,17 @@ mod tests {
     #[test]
     fn test_extract_feat_no_feat() {
         let given = "A plain title".to_owned();
+        let expected = TrackFeat {
+            title: given.clone(),
+            featured_artists: Vec::new(),
+            original_title: given.clone(),
+        };
+        assert_eq!(extract_feat(&given), expected);
+    }
+
+    #[test]
+    fn test_extract_feat_no_feat_in_word() {
+        let given = "Lift Method".to_owned();
         let expected = TrackFeat {
             title: given.clone(),
             featured_artists: Vec::new(),
